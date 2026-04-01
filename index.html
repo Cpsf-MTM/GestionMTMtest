@@ -572,7 +572,7 @@ body {
 let motivo = '';
 let datos = {};
 let ci = {}; // canvas initialized
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwCOXvXO_xeflJ8udNlvjJD2h80O5hPdptkdHBBCM_72Ce4EfuE2GtPv3bxw1Z0ydxY/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycby8yruBYHhMDhKRZz3a6jaXn2PtvBG81SymHmkP5ijlrjr9n9T7A2jt3l48wWN60t0U/exec;
 
 const BILLETES = [
   {id:'b_20000',wrap:'bi_20000',label:'$20.000'},
@@ -684,6 +684,7 @@ function goStep2() {
   const rf=document.getElementById('r_fecha');
   if(rf&&!rf.value) rf.value=new Date().toISOString().slice(0,16);
   toast('Egreso registrado');
+  enviarEgreso();
 }
 function goStep1(){ setStep(1); }
 function goStep3(){
@@ -694,6 +695,7 @@ function goStep3(){
   const fi=document.getElementById('i_fecha');
   if(fi&&!fi.value) fi.value=new Date().toISOString().slice(0,16);
   toast('Reparación registrada');
+  enviarReparacion();
 }
 function goStep2b(){ setStep(2); }
 function reingresar(){
@@ -706,7 +708,7 @@ function reingresar(){
   document.getElementById('fin_maquina').textContent=datos.maquina!=='—'?'#'+datos.maquina:'';
   buildSummary(document.getElementById('sum3'));
   toast('Reingreso aprobado');
-  guardarEnSheets();
+  enviarReingreso();
 }
 function resetApp(){
   motivo='';datos={};ci={};
@@ -872,37 +874,55 @@ function genPDFFinal(){
 }
 
 
-// ── GOOGLE SHEETS ────────────────────────────────────────────────
-function guardarEnSheets() {
+// ── GOOGLE SHEETS + EMAIL ────────────────────────────────────────
+const fmtP = n => n != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(n) : '';
+
+function enviarEgreso() {
   const payload = {
-    maquina:    datos.maquina,
-    isla:       datos.isla,
-    fecha:      datos.fecha,
-    motivo:     datos.motivo,
-    coin_in:    datos.coin_in,
-    coin_out:   datos.coin_out,
-    pct:        datos.pct,
-    jackpot:    datos.jackpot,
-    p1: datos.p1 != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(datos.p1) : '',
-    p2: datos.p2 != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(datos.p2) : '',
-    p3: datos.p3 != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(datos.p3) : '',
-    p4: datos.p4 != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(datos.p4) : '',
-    p5: datos.p5 != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(datos.p5) : '',
-    tecnico:    datos.tecnico,
-    fecha_rep:  datos.fecha_rep,
-    trabajo:    datos.trabajo,
-    inspector:  datos.inspector,
-    fecha_insp: datos.fecha_insp,
-    obs:        datos.obs
+    tipo: 'egreso',
+    maquina: datos.maquina, isla: datos.isla, fecha: datos.fecha,
+    motivo: datos.motivo, coin_in: datos.coin_in, coin_out: datos.coin_out,
+    pct: datos.pct, jackpot: datos.jackpot,
+    p1: fmtP(datos.p1), p2: fmtP(datos.p2), p3: fmtP(datos.p3),
+    p4: fmtP(datos.p4), p5: fmtP(datos.p5)
   };
+  postSheets(payload, 'Egreso registrado — aviso enviado');
+}
+
+function enviarReparacion() {
+  const payload = {
+    tipo: 'reparacion',
+    maquina: datos.maquina, isla: datos.isla, fecha: datos.fecha,
+    motivo: datos.motivo,
+    tecnico: datos.tecnico, fecha_rep: datos.fecha_rep, trabajo: datos.trabajo
+  };
+  postSheets(payload, 'Reparación registrada — aviso enviado');
+}
+
+function enviarReingreso() {
+  const payload = {
+    tipo: 'reingreso',
+    maquina: datos.maquina, isla: datos.isla, fecha: datos.fecha,
+    motivo: datos.motivo, coin_in: datos.coin_in, coin_out: datos.coin_out,
+    pct: datos.pct, jackpot: datos.jackpot,
+    p1: fmtP(datos.p1), p2: fmtP(datos.p2), p3: fmtP(datos.p3),
+    p4: fmtP(datos.p4), p5: fmtP(datos.p5),
+    tecnico: datos.tecnico, fecha_rep: datos.fecha_rep, trabajo: datos.trabajo,
+    inspector: datos.inspector, fecha_insp: datos.fecha_insp, obs: datos.obs,
+    checks_gen: datos.checks_gen, billetes: datos.billetes, checks_pago: datos.checks_pago
+  };
+  postSheets(payload, 'Reingreso aprobado — PDF enviado por mail');
+}
+
+function postSheets(payload, msg) {
   fetch(SHEETS_URL, {
     method: 'POST',
     mode: 'no-cors',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
-  .then(() => toast('Registro guardado en Sheets'))
-  .catch(() => toast('Sin conexión — PDF guardado igual'));
+  .then(() => toast(msg))
+  .catch(() => toast('Sin conexión — PDF descargado igual'));
 }
 
 // ── INIT ─────────────────────────────────────────────────────────
