@@ -572,6 +572,7 @@ body {
 let motivo = '';
 let datos = {};
 let ci = {}; // canvas initialized
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwCOXvXO_xeflJ8udNlvjJD2h80O5hPdptkdHBBCM_72Ce4EfuE2GtPv3bxw1Z0ydxY/exec';
 
 const BILLETES = [
   {id:'b_20000',wrap:'bi_20000',label:'$20.000'},
@@ -705,6 +706,7 @@ function reingresar(){
   document.getElementById('fin_maquina').textContent=datos.maquina!=='—'?'#'+datos.maquina:'';
   buildSummary(document.getElementById('sum3'));
   toast('Reingreso aprobado');
+  guardarEnSheets();
 }
 function resetApp(){
   motivo='';datos={};ci={};
@@ -867,6 +869,40 @@ function genPDFFinal(){
   pdfFooter(doc);
   doc.save(`acta_completa_maq_${datos.maquina}_${Date.now()}.pdf`);
   toast('PDF descargado');
+}
+
+
+// ── GOOGLE SHEETS ────────────────────────────────────────────────
+function guardarEnSheets() {
+  const payload = {
+    maquina:    datos.maquina,
+    isla:       datos.isla,
+    fecha:      datos.fecha,
+    motivo:     datos.motivo,
+    coin_in:    datos.coin_in,
+    coin_out:   datos.coin_out,
+    pct:        datos.pct,
+    jackpot:    datos.jackpot,
+    p1: datos.p1 != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(datos.p1) : '',
+    p2: datos.p2 != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(datos.p2) : '',
+    p3: datos.p3 != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(datos.p3) : '',
+    p4: datos.p4 != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(datos.p4) : '',
+    p5: datos.p5 != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(datos.p5) : '',
+    tecnico:    datos.tecnico,
+    fecha_rep:  datos.fecha_rep,
+    trabajo:    datos.trabajo,
+    inspector:  datos.inspector,
+    fecha_insp: datos.fecha_insp,
+    obs:        datos.obs
+  };
+  fetch(SHEETS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(() => toast('Registro guardado en Sheets'))
+  .catch(() => toast('Sin conexión — PDF guardado igual'));
 }
 
 // ── INIT ─────────────────────────────────────────────────────────
