@@ -2,933 +2,943 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Gestión de Máquinas — Sala</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Mantenimiento Correctivo</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root {
-  --bg: #f5f4f0;
-  --surface: #ffffff;
-  --surface2: #f0efe9;
-  --border: rgba(0,0,0,0.08);
-  --border-med: rgba(0,0,0,0.14);
-  --text: #1a1a18;
-  --text-2: #6b6b66;
-  --text-3: #9b9b94;
-  --accent: #1a1a18;
-  --danger: #c0392b;
-  --danger-bg: #fdf2f1;
-  --danger-border: #f0c4c0;
-  --warning: #b45309;
-  --warning-bg: #fffbeb;
-  --warning-border: #fcd34d;
-  --success: #166534;
-  --success-bg: #f0fdf4;
-  --success-border: #86efac;
-  --info: #1e40af;
-  --info-bg: #eff6ff;
-  --info-border: #93c5fd;
-  --radius: 10px;
-  --radius-lg: 14px;
-  --font: 'DM Sans', sans-serif;
-  --mono: 'DM Mono', monospace;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; }
-body {
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* HEADER */
-.app-header {
-  background: var(--text);
-  color: #fff;
-  padding: 0 20px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.app-header h1 { font-size: 14px; font-weight: 500; letter-spacing: 0.02em; }
-.header-badge {
-  font-family: var(--mono);
-  font-size: 11px;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 6px;
-  padding: 3px 10px;
-  color: rgba(255,255,255,0.7);
-}
-
-/* STEPPER */
-.stepper-wrap {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 20px;
-}
-.stepper {
-  display: flex;
-  align-items: center;
-  max-width: 680px;
-  margin: 0 auto;
-  height: 52px;
-  gap: 0;
-}
-.step-item { display: flex; align-items: center; flex: 1; min-width: 0; }
-.step-btn {
-  display: flex; align-items: center; gap: 8px;
-  background: none; border: none; cursor: default;
-  padding: 0; font-family: var(--font);
-}
-.step-num {
-  width: 24px; height: 24px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 500;
-  border: 1.5px solid var(--border-med);
-  color: var(--text-3);
-  flex-shrink: 0;
-}
-.step-num.active { background: var(--text); border-color: var(--text); color: #fff; }
-.step-num.done { background: var(--success); border-color: var(--success); color: #fff; }
-.step-lbl { font-size: 12px; color: var(--text-3); white-space: nowrap; }
-.step-lbl.active { color: var(--text); font-weight: 500; }
-.step-lbl.done { color: var(--success); }
-.step-line { flex: 1; height: 1px; background: var(--border); margin: 0 10px; }
-.step-line.done { background: var(--success); }
-
-/* MAIN */
-.main { max-width: 680px; margin: 0 auto; padding: 20px 16px 60px; }
-
-/* PANELS */
-.panel { display: none; }
-.panel.active { display: block; }
-
-/* PANEL HEADER */
-.panel-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-.panel-title { font-size: 20px; font-weight: 500; color: var(--text); }
-
-/* BADGE */
-.badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 11px; font-weight: 500;
-  padding: 4px 10px; border-radius: 20px;
-  letter-spacing: 0.02em;
-}
-.badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
-.badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
-.badge-success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
-.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-
-/* CARD */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 18px;
-  margin-bottom: 12px;
-}
-.card-title {
-  font-size: 11px; font-weight: 500;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 14px;
-}
-
-/* GRID */
-.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-
-/* FIELDS */
-.field { display: flex; flex-direction: column; gap: 5px; }
-.field label { font-size: 12px; color: var(--text-2); font-weight: 400; }
-.field input,
-.field select,
-.field textarea {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 9px 12px;
-  font-family: var(--font);
-  font-size: 14px;
-  color: var(--text);
-  outline: none;
-  transition: border-color 0.15s;
-  -webkit-appearance: none;
-}
-.field input:focus,
-.field select:focus,
-.field textarea:focus { border-color: var(--text); background: var(--surface); }
-.field textarea { resize: vertical; min-height: 72px; }
-
-/* MOTIVO GRID */
-.motivo-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.motivo-opt {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 10px 8px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-2);
-  cursor: pointer;
-  background: var(--surface2);
-  transition: all 0.12s;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-.motivo-opt:hover { border-color: var(--border-med); color: var(--text); }
-.motivo-opt.sel {
-  background: var(--text);
-  border-color: var(--text);
-  color: #fff;
-  font-weight: 500;
-}
-
-/* PROGRESIVOS */
-.prog-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-.prog-item { display: flex; flex-direction: column; gap: 5px; }
-.prog-item label { font-size: 11px; color: var(--text-3); text-align: center; }
-.prog-wrap { position: relative; }
-.prog-prefix {
-  position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
-  font-size: 12px; color: var(--text-3); pointer-events: none;
-  font-family: var(--mono);
-}
-.prog-wrap input { padding-left: 20px; text-align: right; font-family: var(--mono); font-size: 12px; }
-
-/* FIRMA */
-.firma-wrap {
-  border: 1.5px dashed var(--border-med);
-  border-radius: var(--radius);
-  height: 96px;
-  position: relative;
-  overflow: hidden;
-  cursor: crosshair;
-  background: var(--surface2);
-  touch-action: none;
-}
-.firma-placeholder {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 12px; color: var(--text-3);
-  pointer-events: none; white-space: nowrap;
-}
-.firma-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-.firma-actions { display: flex; justify-content: flex-end; margin-top: 5px; }
-.btn-link {
-  background: none; border: none; cursor: pointer;
-  font-size: 12px; color: var(--text-3); text-decoration: underline;
-  font-family: var(--font); padding: 0;
-}
-
-/* CHECKLIST */
-.check-group-label {
-  font-size: 11px; font-weight: 500; color: var(--text-3);
-  text-transform: uppercase; letter-spacing: 0.07em;
-  margin: 14px 0 8px;
-}
-.check-group-label:first-child { margin-top: 0; }
-.chk-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 14px; color: var(--text);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.chk-item:last-child { border-bottom: none; }
-.chk-item input[type=checkbox] { width: 17px; height: 17px; flex-shrink: 0; accent-color: var(--text); cursor: pointer; }
-
-/* BILLETES */
-.billetes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
-.billete {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 10px 4px; cursor: pointer; background: var(--surface2);
-  transition: all 0.12s; -webkit-tap-highlight-color: transparent; user-select: none;
-}
-.billete input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--success); cursor: pointer; }
-.billete-label { font-size: 12px; font-weight: 500; color: var(--text-2); font-family: var(--mono); }
-.billete.ck { background: var(--success-bg); border-color: var(--success-border); }
-.billete.ck .billete-label { color: var(--success); }
-
-/* SUMMARY BOX */
-.summary-box {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  margin-bottom: 12px;
-}
-.summary-title {
-  font-size: 11px; font-weight: 500; color: var(--text-3);
-  text-transform: uppercase; letter-spacing: 0.08em;
-  margin-bottom: 10px;
-}
-.sum-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 13px; }
-.sum-lbl { color: var(--text-2); }
-.sum-val { color: var(--text); font-weight: 500; font-family: var(--mono); font-size: 12px; }
-
-/* BUTTONS */
-.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
-.btn {
-  display: flex; align-items: center; justify-content: center;
-  padding: 12px 16px; border-radius: var(--radius);
-  font-family: var(--font); font-size: 14px; font-weight: 500;
-  cursor: pointer; border: 1px solid var(--border);
-  background: var(--surface); color: var(--text);
-  transition: all 0.12s; -webkit-tap-highlight-color: transparent;
-  min-height: 46px;
-}
-.btn:hover { background: var(--surface2); }
-.btn:active { transform: scale(0.98); }
-.btn-dark { background: var(--text); border-color: var(--text); color: #fff; }
-.btn-dark:hover { opacity: 0.88; background: var(--text); }
-.btn-red { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger); }
-.btn-red:hover { background: #fde8e6; }
-.btn-green { background: var(--success-bg); border-color: var(--success-border); color: var(--success); }
-.btn-green:hover { background: #dcfce7; }
-.btn-blue { background: var(--info-bg); border-color: var(--info-border); color: var(--info); }
-.btn-blue:hover { background: #dbeafe; }
-.btn-full { grid-column: 1 / -1; }
-
-/* SUCCESS PANEL */
-.success-card {
-  background: var(--success-bg);
-  border: 1px solid var(--success-border);
-  border-radius: var(--radius-lg);
-  padding: 28px 20px;
-  text-align: center;
-  margin-bottom: 16px;
-}
-.success-icon {
-  width: 48px; height: 48px; border-radius: 50%;
-  background: var(--success);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 14px;
-}
-.success-icon svg { width: 24px; height: 24px; }
-.success-card h2 { font-size: 18px; font-weight: 500; color: var(--success); margin-bottom: 6px; }
-.success-card p { font-size: 13px; color: #4ade80; }
-
-/* TOAST */
-.toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: var(--text); color: #fff;
-  border-radius: 20px; padding: 10px 20px;
-  font-size: 13px; font-weight: 500;
-  opacity: 0; transition: opacity 0.25s;
-  z-index: 999; white-space: nowrap;
-  pointer-events: none;
-}
-.toast.show { opacity: 1; }
-
-/* RESPONSIVE */
-@media (max-width: 480px) {
-  .motivo-grid { grid-template-columns: repeat(2, 1fr); }
-  .prog-grid { grid-template-columns: repeat(3, 1fr); }
-  .g3 { grid-template-columns: 1fr 1fr; }
-  .billetes-grid { grid-template-columns: repeat(3, 1fr); }
-  .panel-title { font-size: 17px; }
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --accent: #c8a84b; --accent-light: #f0d882;
+    --bg: #0f0f1a; --surface: #1e1e2e; --surface2: #252535;
+    --border: rgba(200,168,75,0.25); --border2: rgba(200,168,75,0.5);
+    --text: #e8e8f0; --text-muted: #9090a8;
+    --success: #2ecc71; --danger: #e74c3c; --warning: #f39c12; --info: #3498db;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+  .app { max-width: 960px; margin: 0 auto; padding: 16px; }
+  .header { text-align: center; padding: 24px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .header h1 { font-size: 20px; font-weight: 600; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+  .header p { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .pipeline { display: flex; margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; flex-wrap: wrap; }
+  .pipe-step { flex: 1; min-width:100px; padding: 12px 8px; text-align: center; cursor: pointer; transition: background 0.2s; border-right: 1px solid var(--border); position: relative; }
+  .pipe-step:last-child { border-right: none; }
+  .pipe-step:hover { background: var(--surface2); }
+  .pipe-step.active { background: rgba(200,168,75,0.15); }
+  .pipe-step .ps-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .pipe-step .ps-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .pipe-step .ps-count { position: absolute; top: 6px; right: 8px; background: var(--accent); color: #000; font-size: 10px; font-weight: 700; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; }
+  .btn { padding: 8px 16px; border: 1px solid var(--border2); background: transparent; color: var(--text); border-radius: 6px; cursor: pointer; font-size: 13px; font-family: var(--font); transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+  .btn.btn-primary { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+  .btn.btn-primary:hover { background: var(--accent-light); }
+  .btn.btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .btn.btn-success { background: var(--success); color: #000; border-color: var(--success); }
+  .btn.btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .panel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .panel-header .ph-icon { font-size: 22px; }
+  .panel-header h2 { font-size: 15px; font-weight: 600; color: var(--accent); }
+  .panel-header .ph-sub { font-size: 12px; color: var(--text-muted); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.cols4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .form-grid.cols1 { grid-template-columns: 1fr; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field input, .field select, .field textarea { background: var(--surface2); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text); padding: 8px 10px; font-size: 13px; font-family: var(--font); outline: none; transition: border-color 0.2s; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field select option { background: var(--surface2); }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .prog-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .checklist { display: flex; flex-direction: column; gap: 8px; }
+  .check-item { display: flex; align-items: center; gap: 12px; background: var(--surface2); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
+  .check-item span { flex: 1; font-size: 13px; }
+  .check-btns { display: flex; gap: 6px; }
+  .check-btn { padding: 4px 12px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 12px; transition: all 0.15s; }
+  .check-btn.ok { background: rgba(46,204,113,0.2); border-color: var(--success); color: var(--success); }
+  .check-btn.fail { background: rgba(231,76,60,0.2); border-color: var(--danger); color: var(--danger); }
+  .firma-wrap { background: var(--surface2); border: 1px dashed var(--border2); border-radius: 8px; padding: 12px; }
+  .firma-canvas { width: 100%; height: 120px; border-radius: 6px; background: rgba(255,255,255,0.04); cursor: crosshair; display: block; touch-action: none; }
+  .firma-actions { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+  .firma-actions small { color: var(--text-muted); font-size: 11px; flex: 1; }
+  .records { display: flex; flex-direction: column; gap: 10px; }
+  .record-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .record-card .rc-status { font-size: 20px; min-width: 28px; }
+  .record-card .rc-info { flex: 1; min-width: 200px; }
+  .record-card .rc-info h3 { font-size: 14px; font-weight: 600; }
+  .record-card .rc-info p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .record-card .rc-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-warning { background: rgba(243,156,18,0.2); color: var(--warning); border: 1px solid rgba(243,156,18,0.4); }
+  .badge-success { background: rgba(46,204,113,0.2); color: var(--success); border: 1px solid rgba(46,204,113,0.4); }
+  .badge-info { background: rgba(52,152,219,0.2); color: var(--info); border: 1px solid rgba(52,152,219,0.4); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; }
+  .alert-success { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: var(--success); }
+  .alert-info { background: rgba(52,152,219,0.1); border: 1px solid rgba(52,152,219,0.3); color: var(--info); }
+  .alert-danger { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); color: var(--danger); }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; padding: 24px; width: 100%; max-width: 580px; margin: auto; }
+  .modal h2 { font-size: 16px; color: var(--accent); margin-bottom: 4px; }
+  .modal .modal-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+  .section-title { font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin: 16px 0 10px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+  .verify-box { background: rgba(200,168,75,0.07); border: 1px solid var(--border2); border-radius: 8px; padding: 14px; margin-bottom: 4px; }
+  .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; gap: 16px; }
+  .loading-overlay.open { display: flex; }
+  .loading-overlay p { color: #fff; font-size: 14px; }
+  .loading-spinner { width: 40px; height: 40px; border: 3px solid rgba(200,168,75,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .stat-card { background: var(--surface2); border-radius: 8px; padding: 16px; text-align: center; border: 1px solid var(--border); }
+  .stat-card p.label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stat-card p.value { font-size: 28px; font-weight: 600; }
+  .bar-row { background: var(--surface2); border-radius: 8px; padding: 12px 14px; border: 1px solid var(--border); margin-bottom: 8px; }
+  .bar-row .bar-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px; }
+  .bar-track { background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+  .reporte-textarea { width:100%; min-height:300px; background:var(--surface2); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:var(--text); padding:14px; font-size:13px; font-family:'Courier New',monospace; line-height:1.7; resize:vertical; }
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid.cols3 { grid-template-columns: 1fr 1fr; }
+    .form-grid.cols4 { grid-template-columns: 1fr 1fr; }
+    .prog-group { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
-<div class="app-header">
-  <h1>Gestión de máquinas</h1>
-  <span class="header-badge">SALA</span>
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <p id="loading-msg">Procesando...</p>
 </div>
 
-<div class="stepper-wrap">
-  <div class="stepper">
-    <div class="step-item">
-      <button class="step-btn">
-        <span class="step-num active" id="sc1">1</span>
-        <span class="step-lbl active" id="sl1">Egreso</span>
-      </button>
+<div class="app">
+  <div class="header">
+    <h1>♦ Gestión de Mantenimiento Correctivo</h1>
+    <p>Sistema de control de máquinas — Casino Santa Fe</p>
+  </div>
+
+  <div class="pipeline">
+    <div class="pipe-step" id="pipe-0"><span class="ps-icon">📋</span><span class="ps-label">Registros</span></div>
+    <div class="pipe-step" id="pipe-1"><span class="ps-icon">🔴</span><span class="ps-label">Etapa 1</span><span class="ps-count" id="cnt1">0</span></div>
+    <div class="pipe-step" id="pipe-2"><span class="ps-icon">🔧</span><span class="ps-label">Etapa 2</span><span class="ps-count" id="cnt2">0</span></div>
+    <div class="pipe-step" id="pipe-3"><span class="ps-icon">✅</span><span class="ps-label">Etapa 3</span><span class="ps-count" id="cnt3">0</span></div>
+    <div class="pipe-step" id="pipe-4"><span class="ps-icon">📊</span><span class="ps-label">Estadísticas</span></div>
+    <div class="pipe-step" id="pipe-5"><span class="ps-icon">📋</span><span class="ps-label">Reporte diario</span></div>
+  </div>
+
+  <div id="alert-area"></div>
+
+  <!-- LISTA -->
+  <div id="tab-lista" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input id="search-input" type="text" placeholder="Buscar por N° máquina o isla..."
+          style="background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:var(--font);outline:none;width:220px;" oninput="renderLista()">
+        <select id="filter-status" onchange="renderLista()"
+          style="background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);padding:8px;font-size:13px;font-family:var(--font);outline:none;">
+          <option value="">Todos los estados</option>
+          <option value="egreso">Solo egresadas</option>
+          <option value="tecnico">Solo reparadas</option>
+          <option value="completo">Completadas</option>
+        </select>
+        <button class="btn btn-sm" onclick="cargarDatos()">🔄 Actualizar</button>
+      </div>
+      <button class="btn btn-primary" onclick="showTab('egreso');resetEgresoForm()">+ Nueva Máquina Fuera de Servicio</button>
     </div>
-    <div class="step-line" id="line1"></div>
-    <div class="step-item">
-      <button class="step-btn">
-        <span class="step-num" id="sc2">2</span>
-        <span class="step-lbl" id="sl2">Reparación</span>
-      </button>
+    <div id="lista-records" class="records"></div>
+  </div>
+
+  <!-- EGRESO -->
+  <div id="tab-egreso" style="display:none;">
+    <div class="panel">
+      <div class="panel-header"><span class="ph-icon">🔴</span><div><h2>Etapa 1 — Egreso de Máquina</h2><p class="ph-sub">Máquina fuera de servicio · Aviso a Técnicos y Juego</p></div></div>
+      <div class="section-title">Identificación</div>
+      <div class="form-grid cols3">
+        <div class="field"><label>N° Máquina *</label><input type="text" id="e-maquina" placeholder="Ej: 0042"></div>
+        <div class="field"><label>N° Isla *</label><input type="text" id="e-isla" placeholder="Ej: 07"></div>
+        <div class="field"><label>Fecha y Hora *</label><input type="datetime-local" id="e-fecha"></div>
+      </div>
+      <div class="section-title" style="margin-top:14px;">Motivo del Egreso</div>
+      <div class="field">
+        <label>Motivo *</label>
+        <select id="e-motivo">
+          <option value="">— Seleccionar —</option>
+          <option>Borrado total</option><option>Borrado parcial</option><option>Clear</option>
+          <option>Cambio de layout</option><option>Cambio de juego</option><option>Cambio de denominación</option>
+          <option>Falla técnica</option><option>Mantenimiento preventivo</option><option>Baja transitoria</option>
+          <option>Cambio de MDC</option>
+        </select>
+      </div>
+      <div class="section-title" style="margin-top:14px;">Contadores</div>
+      <div class="form-grid cols3">
+        <div class="field"><label>COIN IN ($)</label><input type="text" id="e-coinin" placeholder="0,00"></div>
+        <div class="field"><label>COIN OUT ($)</label><input type="text" id="e-coinout" placeholder="0,00"></div>
+        <div class="field"><label>Jackpot ($)</label><input type="text" id="e-jackpot" placeholder="0,00"></div>
+      </div>
+      <div class="section-title" style="margin-top:14px;">Progresivos</div>
+      <div class="prog-group">
+        <div class="field"><label>Progresivo 1 ($)</label><input type="text" id="e-prog1" placeholder="0,00"></div>
+        <div class="field"><label>Progresivo 2 ($)</label><input type="text" id="e-prog2" placeholder="0,00"></div>
+        <div class="field"><label>Progresivo 3 ($)</label><input type="text" id="e-prog3" placeholder="0,00"></div>
+        <div class="field"><label>Progresivo 4 ($)</label><input type="text" id="e-prog4" placeholder="0,00"></div>
+      </div>
+      <div class="form-grid cols1" style="margin-top:12px;">
+        <div class="field"><label>% de Devolución</label><input type="text" id="e-devolucion" placeholder="Ej: 94,5%"></div>
+      </div>
+      <div class="section-title" style="margin-top:14px;">Foto de la Máquina</div>
+      <div class="field" style="margin-bottom:10px;">
+        <label>Foto (opcional)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+          <label class="btn btn-sm" style="cursor:pointer;">
+            📷 Tomar foto
+            <input type="file" id="e-foto-camara" accept="image/*" capture="environment" style="display:none;" onchange="previewFoto('e-foto-camara')">
+          </label>
+          <label class="btn btn-sm" style="cursor:pointer;">
+            🖼 Subir imagen
+            <input type="file" id="e-foto-archivo" accept="image/*" style="display:none;" onchange="previewFoto('e-foto-archivo')">
+          </label>
+          <button class="btn btn-sm" onclick="clearFoto()">✕ Quitar</button>
+        </div>
+        <div id="e-foto-preview" style="display:none;">
+          <img id="e-foto-img" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border);">
+        </div>
+        <input type="hidden" id="e-foto-data">
+      </div>
+      <div class="section-title" style="margin-top:14px;">Firma del Operador</div>
+      <div class="field" style="margin-bottom:10px;"><label>Nombre del Operador *</label><input type="text" id="e-operador" placeholder="Nombre completo"></div>
+      <div class="firma-wrap">
+        <canvas id="canvas-egreso" class="firma-canvas" width="800" height="150"></canvas>
+        <div class="firma-actions"><small>Firme con mouse o dedo</small><button class="btn btn-sm" onclick="clearCanvas('canvas-egreso')">Limpiar</button></div>
+      </div>
+      <hr class="divider">
+      <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+        <button class="btn" onclick="showTab('lista')">Cancelar</button>
+        <button class="btn btn-primary" id="btn-guardar-egreso" onclick="guardarEgreso()">📤 Registrar Egreso y Enviar Aviso</button>
+      </div>
     </div>
-    <div class="step-line" id="line2"></div>
-    <div class="step-item">
-      <button class="step-btn">
-        <span class="step-num" id="sc3">3</span>
-        <span class="step-lbl" id="sl3">Inspección</span>
-      </button>
+  </div>
+
+  <!-- TECNICO -->
+  <div id="tab-tecnico" style="display:none;">
+    <div class="panel">
+      <div class="panel-header"><span class="ph-icon">🔧</span><div><h2>Etapa 2 — Registro Técnico</h2><p class="ph-sub">Ingrese el número de máquina para cargar sobre el egreso existente</p></div></div>
+      <div id="tecnico-buscar">
+        <div class="form-grid cols3">
+          <div class="field"><label>N° Máquina</label><input type="text" id="t-buscar-maq" placeholder="Ej: 0042" oninput="buscarParaTecnico()"></div>
+        </div>
+        <div id="tecnico-resultados" style="margin-top:12px;"></div>
+      </div>
+      <div id="tecnico-form" style="display:none;">
+        <hr class="divider">
+        <div id="tecnico-egreso-ref" class="alert alert-info" style="margin-bottom:14px;"></div>
+        <div class="section-title">Datos del Informe Técnico</div>
+        <div class="form-grid cols3">
+          <div class="field"><label>N° Informe Técnico</label><input type="text" id="t-informe" placeholder="Opcional"></div>
+          <div class="field"><label>N° Máquina</label><input type="text" id="t-maquina" readonly style="opacity:0.6;"></div>
+          <div class="field"><label>N° Isla</label><input type="text" id="t-isla" readonly style="opacity:0.6;"></div>
+        </div>
+        <div class="form-grid cols1" style="margin-top:8px;">
+          <div class="field"><label>Fecha y Hora de Reparación *</label><input type="datetime-local" id="t-fecha"></div>
+        </div>
+        <div class="section-title" style="margin-top:14px;">Solución Aplicada</div>
+        <div class="field"><label>Descripción de la solución *</label><textarea id="t-solucion" placeholder="Describa detalladamente la reparación realizada..."></textarea></div>
+        <div class="section-title" style="margin-top:14px;">Firma del Técnico</div>
+        <div class="field" style="margin-bottom:10px;"><label>Nombre del Técnico *</label><input type="text" id="t-tecnico" placeholder="Nombre completo"></div>
+        <div class="firma-wrap">
+          <canvas id="canvas-tecnico" class="firma-canvas" width="800" height="150"></canvas>
+          <div class="firma-actions"><small>Firme con mouse o dedo</small><button class="btn btn-sm" onclick="clearCanvas('canvas-tecnico')">Limpiar</button></div>
+        </div>
+        <hr class="divider">
+        <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+          <button class="btn" onclick="cancelarTecnico()">Cancelar</button>
+          <button class="btn btn-primary" id="btn-guardar-tecnico" onclick="guardarTecnico()">🔔 Registrar Reparación y Enviar Alerta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSPECTOR -->
+  <div id="tab-inspector" style="display:none;">
+    <div class="panel">
+      <div class="panel-header"><span class="ph-icon">✅</span><div><h2>Etapa 3 — Inspección y Reingreso</h2><p class="ph-sub">Control final antes de poner la máquina en servicio</p></div></div>
+      <div id="inspector-buscar">
+        <div class="form-grid cols3">
+          <div class="field"><label>N° Máquina</label><input type="text" id="i-buscar-maq" placeholder="Ej: 0042" oninput="buscarParaInspector()"></div>
+        </div>
+        <div id="inspector-resultados" style="margin-top:12px;"></div>
+      </div>
+      <div id="inspector-form" style="display:none;">
+        <hr class="divider">
+        <div id="inspector-ref" class="alert alert-info" style="margin-bottom:14px;"></div>
+        <div class="section-title">Identificación</div>
+        <div class="form-grid cols3">
+          <div class="field"><label>N° Máquina</label><input type="text" id="i-maquina" readonly style="opacity:0.6;"></div>
+          <div class="field"><label>N° Isla</label><input type="text" id="i-isla" readonly style="opacity:0.6;"></div>
+          <div class="field"><label>Fecha y Hora *</label><input type="datetime-local" id="i-fecha"></div>
+        </div>
+        <div class="form-grid cols3" style="margin-top:8px;">
+          <div class="field"><label>N° Informe Técnico</label><input type="text" id="i-informe" readonly style="opacity:0.6;"></div>
+          <div class="field"><label>COIN IN ($)</label><input type="text" id="i-coinin" placeholder="0,00"></div>
+        </div>
+        <div class="section-title" style="margin-top:14px;">Verificación de Configuración</div>
+        <div class="verify-box">
+          <div class="form-grid cols4">
+            <div class="field"><label>% Devolución</label><input type="text" id="i-devolucion" placeholder="Ej: 94,5%"></div>
+            <div class="field"><label>Denominación</label><input type="text" id="i-denominacion" placeholder="Ej: $100"></div>
+            <div class="field"><label>Apuesta Mínima ($)</label><input type="text" id="i-apuesta-min" placeholder="Ej: 50"></div>
+            <div class="field"><label>Apuesta Máxima ($)</label><input type="text" id="i-apuesta-max" placeholder="Ej: 5.000"></div>
+          </div>
+          <div class="form-grid cols1" style="margin-top:10px;">
+            <div class="field"><label>N° MDC</label><input type="text" id="i-mdc" placeholder="Número de módulo de control"></div>
+          </div>
+        </div>
+        <div class="section-title" style="margin-top:14px;">Control de Aceptación de Billetes</div>
+        <div class="checklist" id="checklist-billetes"></div>
+        <div class="section-title" style="margin-top:14px;">Controles Adicionales</div>
+        <div class="checklist" id="checklist-extras"></div>
+        <div class="section-title" style="margin-top:14px;">Firma del Inspector</div>
+        <div class="field" style="margin-bottom:10px;"><label>Nombre del Inspector *</label><input type="text" id="i-inspector" placeholder="Nombre completo"></div>
+        <div class="firma-wrap">
+          <canvas id="canvas-inspector" class="firma-canvas" width="800" height="150"></canvas>
+          <div class="firma-actions"><small>Firme con mouse o dedo</small><button class="btn btn-sm" onclick="clearCanvas('canvas-inspector')">Limpiar</button></div>
+        </div>
+        <hr class="divider">
+        <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+          <button class="btn" onclick="cancelarInspector()">Cancelar</button>
+          <button class="btn btn-success" id="btn-guardar-inspector" onclick="guardarInspector()">✅ Completar Inspección y Reingresar Máquina</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTADÍSTICAS -->
+  <div id="tab-estadisticas" style="display:none;">
+    <div class="panel">
+      <div class="panel-header"><span class="ph-icon">📊</span><div><h2>Panel de Estadísticas</h2><p class="ph-sub">Máquinas con más fallas · Historial de egresos</p></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div class="stat-card"><p class="label">Total Egresos</p><p class="value" id="stat-total" style="color:var(--accent);">0</p></div>
+        <div class="stat-card"><p class="label">Pendientes</p><p class="value" id="stat-pendientes" style="color:var(--warning);">0</p></div>
+        <div class="stat-card"><p class="label">Completados</p><p class="value" id="stat-completo" style="color:var(--success);">0</p></div>
+      </div>
+      <div class="section-title">Máquinas con más fallas</div>
+      <div id="ranking-maquinas"></div>
+      <div class="section-title" style="margin-top:20px;">Egresos por motivo</div>
+      <div id="ranking-motivos"></div>
+      <div class="section-title" style="margin-top:20px;">Tiempo promedio de reparación</div>
+      <div id="stats-tiempo" style="background:var(--surface2);border-radius:8px;padding:16px;border:1px solid var(--border);"></div>
+    </div>
+  </div>
+
+  <!-- REPORTE DIARIO -->
+  <div id="tab-reporte" style="display:none;">
+    <div class="panel">
+      <div class="panel-header"><span class="ph-icon">📋</span><div><h2>Reporte de Máquinas Fuera de Servicio</h2><p class="ph-sub" id="reporte-sub">Listado para enviar al final del día</p></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="btn btn-sm" onclick="cargarDatos().then(renderReporte)">🔄 Actualizar</button>
+        <button class="btn btn-primary" id="btn-copiar-reporte" onclick="copiarReporte()">📋 Copiar texto</button>
+      </div>
+      <textarea id="reporte-texto" class="reporte-textarea" readonly></textarea>
     </div>
   </div>
 </div>
 
-<div class="main">
-
-  <!-- PANEL 1: EGRESO -->
-  <div class="panel active" id="panel1">
-    <div class="panel-hdr">
-      <span class="panel-title">Egreso de máquina</span>
-      <span class="badge badge-danger"><span class="badge-dot"></span>Fuera de servicio</span>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Identificación</div>
-      <div class="g3">
-        <div class="field"><label>N° de máquina</label><input type="text" id="e_maquina" placeholder="0142" inputmode="numeric"></div>
-        <div class="field"><label>N° de isla</label><input type="text" id="e_isla" placeholder="07" inputmode="numeric"></div>
-        <div class="field"><label>Fecha y hora</label><input type="datetime-local" id="e_fecha"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Motivo del egreso</div>
-      <div class="motivo-grid">
-        <div class="motivo-opt" onclick="selMotivo(this,'Borrado total')">Borrado total</div>
-        <div class="motivo-opt" onclick="selMotivo(this,'Borrado parcial')">Borrado parcial</div>
-        <div class="motivo-opt" onclick="selMotivo(this,'Clear')">Clear</div>
-        <div class="motivo-opt" onclick="selMotivo(this,'Cambio de layout')">Cambio de layout</div>
-        <div class="motivo-opt" onclick="selMotivo(this,'Cambio de juego')">Cambio de juego</div>
-        <div class="motivo-opt" onclick="selMotivo(this,'Cambio de denominación')">Cambio de denominación</div>
-        <div class="motivo-opt" onclick="selMotivo(this,'Falla técnica')">Falla técnica</div>
-        <div class="motivo-opt" onclick="selMotivo(this,'Mantenimiento preventivo')">Mantenimiento preventivo</div>
-        <div class="motivo-opt" onclick="selMotivo(this,'Baja transitoria')">Baja transitoria</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Contadores</div>
-      <div class="g3" style="margin-bottom:12px">
-        <div class="field"><label>Coin In</label><input type="number" id="e_coin_in" placeholder="0" inputmode="numeric"></div>
-        <div class="field"><label>Coin Out</label><input type="number" id="e_coin_out" placeholder="0" inputmode="numeric"></div>
-        <div class="field"><label>% Devolución</label><input type="number" id="e_pct" placeholder="0.00" step="0.01" inputmode="decimal"></div>
-      </div>
-      <div class="g2">
-        <div class="field"><label>Jackpot</label><input type="number" id="e_jackpot" placeholder="0" inputmode="numeric"></div>
-        <div class="field"><label>Progresivo general</label><input type="number" id="e_prog_gen" placeholder="0" inputmode="numeric"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Progresivos ($ ARS)</div>
-      <div class="prog-grid">
-        <div class="prog-item"><label>Prog 1</label><div class="prog-wrap"><span class="prog-prefix">$</span><input type="text" id="e_p1" placeholder="0" inputmode="decimal" onblur="fmtPeso(this)" onfocus="unfmtPeso(this)"></div></div>
-        <div class="prog-item"><label>Prog 2</label><div class="prog-wrap"><span class="prog-prefix">$</span><input type="text" id="e_p2" placeholder="0" inputmode="decimal" onblur="fmtPeso(this)" onfocus="unfmtPeso(this)"></div></div>
-        <div class="prog-item"><label>Prog 3</label><div class="prog-wrap"><span class="prog-prefix">$</span><input type="text" id="e_p3" placeholder="0" inputmode="decimal" onblur="fmtPeso(this)" onfocus="unfmtPeso(this)"></div></div>
-        <div class="prog-item"><label>Prog 4</label><div class="prog-wrap"><span class="prog-prefix">$</span><input type="text" id="e_p4" placeholder="0" inputmode="decimal" onblur="fmtPeso(this)" onfocus="unfmtPeso(this)"></div></div>
-        <div class="prog-item"><label>Prog 5</label><div class="prog-wrap"><span class="prog-prefix">$</span><input type="text" id="e_p5" placeholder="0" inputmode="decimal" onblur="fmtPeso(this)" onfocus="unfmtPeso(this)"></div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Firma del responsable</div>
-      <div class="firma-wrap" id="fa1">
-        <span class="firma-placeholder" id="fp1">Firmá acá con el dedo o mouse</span>
-        <canvas class="firma-canvas" id="fc1"></canvas>
-      </div>
-      <div class="firma-actions"><button class="btn-link" onclick="clearFirma('fc1','fp1')">Borrar firma</button></div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn" onclick="genPDFEgreso()">Descargar PDF egreso</button>
-      <button class="btn btn-red" onclick="goStep2()">Registrar y continuar →</button>
+<div class="modal-overlay" id="modal-aviso">
+  <div class="modal">
+    <h2 id="modal-title"></h2>
+    <p class="modal-sub" id="modal-sub"></p>
+    <div id="modal-body"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn btn-primary" onclick="closeModal('modal-aviso')">Cerrar</button>
     </div>
   </div>
-
-  <!-- PANEL 2: REPARACIÓN -->
-  <div class="panel" id="panel2">
-    <div class="panel-hdr">
-      <span class="panel-title">Reparación técnica</span>
-      <span class="badge badge-warning"><span class="badge-dot"></span>En reparación</span>
-    </div>
-    <div class="summary-box" id="sum1"></div>
-    <div class="card">
-      <div class="card-title">Datos del técnico</div>
-      <div class="g2">
-        <div class="field"><label>Nombre del técnico</label><input type="text" id="r_tecnico" placeholder="Nombre y apellido"></div>
-        <div class="field"><label>Fecha y hora de reparación</label><input type="datetime-local" id="r_fecha"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Descripción del trabajo</div>
-      <div class="field"><textarea id="r_trabajo" placeholder="Describa el trabajo realizado..."></textarea></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Firma del técnico</div>
-      <div class="firma-wrap" id="fa2"><span class="firma-placeholder" id="fp2">Firmá acá con el dedo o mouse</span><canvas class="firma-canvas" id="fc2"></canvas></div>
-      <div class="firma-actions"><button class="btn-link" onclick="clearFirma('fc2','fp2')">Borrar firma</button></div>
-    </div>
-    <div class="btn-row">
-      <button class="btn" onclick="goStep1()">← Volver</button>
-      <button class="btn btn-blue" onclick="goStep3()">Marcar como reparada →</button>
-    </div>
-  </div>
-
-  <!-- PANEL 3: INSPECCIÓN -->
-  <div class="panel" id="panel3">
-    <div class="panel-hdr">
-      <span class="panel-title">Control de reingreso</span>
-      <span class="badge badge-warning"><span class="badge-dot"></span>Pendiente inspección</span>
-    </div>
-    <div class="summary-box" id="sum2"></div>
-
-    <div class="card">
-      <div class="card-title">Inspector</div>
-      <div class="g2">
-        <div class="field"><label>Nombre del inspector</label><input type="text" id="i_nombre" placeholder="Nombre y apellido"></div>
-        <div class="field"><label>Fecha y hora de inspección</label><input type="datetime-local" id="i_fecha"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Controles generales</div>
-      <label class="chk-item"><input type="checkbox" id="ch1"> Verificación de contadores post-reparación</label>
-      <label class="chk-item"><input type="checkbox" id="ch2"> Comprobación de funcionamiento del juego</label>
-      <label class="chk-item"><input type="checkbox" id="ch3"> Verificación de denominación y layout</label>
-      <label class="chk-item"><input type="checkbox" id="ch4"> Control de progresivos configurados</label>
-      <label class="chk-item"><input type="checkbox" id="ch5"> Prueba de Coin In / Coin Out</label>
-      <label class="chk-item"><input type="checkbox" id="ch6"> Verificación visual (estado físico)</label>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Aceptación de billetes</div>
-      <p style="font-size:12px;color:var(--text-3);margin-bottom:12px;">Marcar cada billete probado y aceptado correctamente</p>
-      <div class="billetes-grid">
-        <div class="billete" id="bi_20000" onclick="togBillete('bi_20000','b_20000')"><input type="checkbox" id="b_20000" onclick="event.stopPropagation()"><span class="billete-label">$20.000</span></div>
-        <div class="billete" id="bi_10000" onclick="togBillete('bi_10000','b_10000')"><input type="checkbox" id="b_10000" onclick="event.stopPropagation()"><span class="billete-label">$10.000</span></div>
-        <div class="billete" id="bi_2000"  onclick="togBillete('bi_2000','b_2000')">  <input type="checkbox" id="b_2000"  onclick="event.stopPropagation()"><span class="billete-label">$2.000</span></div>
-        <div class="billete" id="bi_1000"  onclick="togBillete('bi_1000','b_1000')">  <input type="checkbox" id="b_1000"  onclick="event.stopPropagation()"><span class="billete-label">$1.000</span></div>
-        <div class="billete" id="bi_500"   onclick="togBillete('bi_500','b_500')">    <input type="checkbox" id="b_500"   onclick="event.stopPropagation()"><span class="billete-label">$500</span></div>
-        <div class="billete" id="bi_200"   onclick="togBillete('bi_200','b_200')">    <input type="checkbox" id="b_200"   onclick="event.stopPropagation()"><span class="billete-label">$200</span></div>
-        <div class="billete" id="bi_100"   onclick="togBillete('bi_100','b_100')">    <input type="checkbox" id="b_100"   onclick="event.stopPropagation()"><span class="billete-label">$100</span></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Sistema de pagos</div>
-      <label class="chk-item"><input type="checkbox" id="ch_aft"> Descuento de AFT verificado correctamente</label>
-      <label class="chk-item"><input type="checkbox" id="ch_ticket"> Acreditación de tickets verificada correctamente</label>
-      <label class="chk-item"><input type="checkbox" id="ch7"> Aprobación final para reingreso a sala</label>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Observaciones</div>
-      <div class="field"><textarea id="i_obs" placeholder="Observaciones adicionales (opcional)..."></textarea></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Firma del inspector</div>
-      <div class="firma-wrap" id="fa3"><span class="firma-placeholder" id="fp3">Firmá acá con el dedo o mouse</span><canvas class="firma-canvas" id="fc3"></canvas></div>
-      <div class="firma-actions"><button class="btn-link" onclick="clearFirma('fc3','fp3')">Borrar firma</button></div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn" onclick="goStep2b()">← Volver</button>
-      <button class="btn btn-green" onclick="reingresar()">Aprobar reingreso →</button>
-    </div>
-  </div>
-
-  <!-- PANEL 4: COMPLETADO -->
-  <div class="panel" id="panel4">
-    <div class="success-card">
-      <div class="success-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <h2>Máquina <span id="fin_maquina"></span> reingresada</h2>
-      <p>Proceso completo registrado correctamente</p>
-    </div>
-    <div class="summary-box" id="sum3"></div>
-    <div class="btn-row">
-      <button class="btn btn-green btn-full" onclick="genPDFFinal()" style="margin-bottom:8px">Descargar PDF completo</button>
-      <button class="btn btn-full" onclick="resetApp()">Nuevo egreso</button>
-    </div>
-  </div>
-
-</div><!-- /main -->
-
-<div class="toast" id="toast"></div>
+</div>
 
 <script>
-// ── STATE ────────────────────────────────────────────────────────
-let motivo = '';
-let datos = {};
-let ci = {}; // canvas initialized
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycby2WQtA9KJZ3LyClRZYLwG524Jhbo_oBgRpPY9JXFUx9LvOflKg_ieTuwqkCIZHLxyR/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwE1O3jV1Hxfy39-zY45LmiZYZWkvk3mqlIyk3SskM3WAfQS3leacz4tjVOXP_QT0_W/exec';
+let registros = [];
+let currentTecnicoId = null;
+let currentInspectorId = null;
+const billetes = ['$20.000','$10.000','$2.000','$1.000','$500','$200','$100'];
+const extras = ['Descuento AFT correcto','Acredita tickets correctamente'];
+const checkState = {};
 
-const BILLETES = [
-  {id:'b_20000',wrap:'bi_20000',label:'$20.000'},
-  {id:'b_10000',wrap:'bi_10000',label:'$10.000'},
-  {id:'b_2000', wrap:'bi_2000', label:'$2.000'},
-  {id:'b_1000', wrap:'bi_1000', label:'$1.000'},
-  {id:'b_500',  wrap:'bi_500',  label:'$500'},
-  {id:'b_200',  wrap:'bi_200',  label:'$200'},
-  {id:'b_100',  wrap:'bi_100',  label:'$100'},
-];
-const CHECKS_GEN = [
-  {id:'ch1',label:'Verificación de contadores post-reparación'},
-  {id:'ch2',label:'Comprobación de funcionamiento del juego'},
-  {id:'ch3',label:'Verificación de denominación y layout'},
-  {id:'ch4',label:'Control de progresivos configurados'},
-  {id:'ch5',label:'Prueba de Coin In / Coin Out'},
-  {id:'ch6',label:'Verificación visual (estado físico)'},
-];
-const CHECKS_PAGO = [
-  {id:'ch_aft',   label:'Descuento de AFT verificado'},
-  {id:'ch_ticket',label:'Acreditación de tickets verificada'},
-  {id:'ch7',      label:'Aprobación final para reingreso'},
-];
-
-// ── HELPERS ──────────────────────────────────────────────────────
-const fmtARS = n => {
-  if (n == null || isNaN(n)) return '—';
-  return new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(n);
-};
-const fmtDT = v => {
-  if (!v || v === '—') return '—';
-  return new Date(v).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-};
-const gv = id => { const e=document.getElementById(id); return e?(e.value.trim()||'—'):'—'; };
-const progVal = id => {
-  const e=document.getElementById(id); if(!e||!e.value.trim()) return null;
-  return parseFloat(e.value.replace(/\./g,'').replace(',','.'));
-};
-const getFirma = id => {
-  const c=document.getElementById(id); if(!c) return null;
-  const px=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
-  return Array.from(px).some((v,i)=>i%4===3&&v>0)?c.toDataURL('image/png'):null;
-};
-function toast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
-}
-function fmtPeso(el) {
-  const r=el.value.replace(/\./g,'').replace(',','.');
-  const n=parseFloat(r);
-  if(!isNaN(n)&&el.value!=='') el.value=new Intl.NumberFormat('es-AR',{maximumFractionDigits:2}).format(n);
-}
-function unfmtPeso(el) {
-  const r=el.value.replace(/\./g,'').replace(',','.');
-  const n=parseFloat(r);
-  el.value=isNaN(n)?'':n;
-}
-function selMotivo(el,v) {
-  document.querySelectorAll('.motivo-opt').forEach(o=>o.classList.remove('sel'));
-  el.classList.add('sel'); motivo=v;
-}
-function togBillete(wId,cbId) {
-  const cb=document.getElementById(cbId);
-  cb.checked=!cb.checked;
-  document.getElementById(wId).classList.toggle('ck',cb.checked);
+// ── TABS ─────────────────────────────────────────────────────
+function showTab(tab) {
+  ['lista','egreso','tecnico','inspector','estadisticas','reporte'].forEach(function(t) {
+    document.getElementById('tab-'+t).style.display = t===tab ? '' : 'none';
+  });
+  ['pipe-0','pipe-1','pipe-2','pipe-3','pipe-4','pipe-5'].forEach(function(id) {
+    document.getElementById(id).classList.remove('active');
+  });
+  var map = {lista:'pipe-0',egreso:'pipe-1',tecnico:'pipe-2',inspector:'pipe-3',estadisticas:'pipe-4',reporte:'pipe-5'};
+  if(map[tab]) document.getElementById(map[tab]).classList.add('active');
+  if(tab==='lista') renderLista();
+  if(tab==='estadisticas') renderEstadisticas();
+  if(tab==='reporte') renderReporte();
 }
 
-// ── STEPPER ──────────────────────────────────────────────────────
-function setStep(n) {
-  for(let i=1;i<=4;i++){const p=document.getElementById('panel'+i);if(p)p.classList.toggle('active',i===n);}
-  for(let i=1;i<=3;i++){
-    const sc=document.getElementById('sc'+i),sl=document.getElementById('sl'+i);
-    if(!sc) continue;
-    sc.className='step-num'+(i<n?' done':i===n?' active':'');
-    sl.className='step-lbl'+(i<n?' done':i===n?' active':'');
-  }
-  for(let i=1;i<=2;i++){const l=document.getElementById('line'+i);if(l)l.className='step-line'+(i<n?' done':'');}
-  if(n<=3) initCanvas('fc'+n,'fa'+n);
-  window.scrollTo(0,0);
+function bindPipeline() {
+  document.getElementById('pipe-0').onclick = function(){ showTab('lista'); };
+  document.getElementById('pipe-1').onclick = function(){ showTab('egreso'); resetEgresoForm(); };
+  document.getElementById('pipe-2').onclick = function(){ showTab('tecnico'); };
+  document.getElementById('pipe-3').onclick = function(){ showTab('inspector'); };
+  document.getElementById('pipe-4').onclick = function(){ showTab('estadisticas'); };
+  document.getElementById('pipe-5').onclick = function(){ showTab('reporte'); };
 }
 
-// ── SUMMARY ──────────────────────────────────────────────────────
-function buildSummary(el) {
-  if(!el) return;
-  const progs=[1,2,3,4,5].filter(i=>datos['p'+i]!=null)
-    .map(i=>`<div class="sum-row"><span class="sum-lbl">Prog ${i}</span><span class="sum-val">${fmtARS(datos['p'+i])}</span></div>`).join('');
-  el.innerHTML=`
-    <div class="summary-title">Resumen del egreso</div>
-    <div class="sum-row"><span class="sum-lbl">Máquina</span><span class="sum-val">${datos.maquina}</span></div>
-    <div class="sum-row"><span class="sum-lbl">Isla</span><span class="sum-val">${datos.isla}</span></div>
-    <div class="sum-row"><span class="sum-lbl">Fecha egreso</span><span class="sum-val">${datos.fecha}</span></div>
-    <div class="sum-row"><span class="sum-lbl">Motivo</span><span class="sum-val">${datos.motivo}</span></div>
-    <div class="sum-row"><span class="sum-lbl">Coin In / Out</span><span class="sum-val">${datos.coin_in} / ${datos.coin_out}</span></div>
-    ${progs}`;
+// ── LOADING / ALERTAS / MODAL ─────────────────────────────────
+function showLoading(msg) { document.getElementById('loading-msg').textContent = msg||'Procesando...'; document.getElementById('loading-overlay').classList.add('open'); }
+function hideLoading() { document.getElementById('loading-overlay').classList.remove('open'); }
+function showAlert(msg, type) { type=type||'success'; var a=document.getElementById('alert-area'); a.innerHTML='<div class="alert alert-'+type+'">'+msg+'</div>'; setTimeout(function(){ a.innerHTML=''; },5000); }
+function showModal(title,sub,body) { document.getElementById('modal-title').textContent=title; document.getElementById('modal-sub').textContent=sub; document.getElementById('modal-body').innerHTML=body; document.getElementById('modal-aviso').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function updateCounters() {
+  document.getElementById('cnt1').textContent = registros.filter(function(r){return r.estado==='egreso';}).length;
+  document.getElementById('cnt2').textContent = registros.filter(function(r){return r.estado==='tecnico';}).length;
+  document.getElementById('cnt3').textContent = registros.filter(function(r){return r.estado==='completo';}).length;
 }
 
-// ── NAV ──────────────────────────────────────────────────────────
-function goStep2() {
-  datos={
-    maquina:gv('e_maquina'),isla:gv('e_isla'),fecha:fmtDT(gv('e_fecha')),
-    motivo:motivo||'—',coin_in:gv('e_coin_in'),coin_out:gv('e_coin_out'),
-    pct:gv('e_pct'),jackpot:gv('e_jackpot'),prog_gen:gv('e_prog_gen'),
-    p1:progVal('e_p1'),p2:progVal('e_p2'),p3:progVal('e_p3'),p4:progVal('e_p4'),p5:progVal('e_p5'),
-    firma_egreso:getFirma('fc1')
-  };
-  setStep(2);
-  buildSummary(document.getElementById('sum1'));
-  const rf=document.getElementById('r_fecha');
-  if(rf&&!rf.value) rf.value=new Date().toISOString().slice(0,16);
-  toast('Egreso registrado');
-  enviarEgreso();
-}
-function goStep1(){ setStep(1); }
-function goStep3(){
-  datos.tecnico=gv('r_tecnico');datos.fecha_rep=fmtDT(gv('r_fecha'));datos.trabajo=gv('r_trabajo');
-  datos.firma_tecnico=getFirma('fc2');
-  setStep(3);
-  buildSummary(document.getElementById('sum2'));
-  const fi=document.getElementById('i_fecha');
-  if(fi&&!fi.value) fi.value=new Date().toISOString().slice(0,16);
-  toast('Reparación registrada');
-  enviarReparacion();
-}
-function goStep2b(){ setStep(2); }
-function reingresar(){
-  datos.inspector=gv('i_nombre');datos.fecha_insp=fmtDT(gv('i_fecha'));datos.obs=gv('i_obs');
-  datos.firma_inspector=getFirma('fc3');
-  datos.checks_gen=CHECKS_GEN.map(c=>({label:c.label,ok:!!document.getElementById(c.id)?.checked}));
-  datos.billetes=BILLETES.map(b=>({label:b.label,ok:!!document.getElementById(b.id)?.checked}));
-  datos.checks_pago=CHECKS_PAGO.map(c=>({label:c.label,ok:!!document.getElementById(c.id)?.checked}));
-  setStep(4);
-  document.getElementById('fin_maquina').textContent=datos.maquina!=='—'?'#'+datos.maquina:'';
-  buildSummary(document.getElementById('sum3'));
-  toast('Reingreso aprobado');
-  enviarReingreso();
-}
-function resetApp(){
-  motivo='';datos={};ci={};
-  ['e_maquina','e_isla','e_fecha','e_coin_in','e_coin_out','e_pct','e_jackpot','e_prog_gen',
-   'e_p1','e_p2','e_p3','e_p4','e_p5','r_tecnico','r_fecha','r_trabajo','i_nombre','i_fecha','i_obs']
-    .forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  document.querySelectorAll('.motivo-opt').forEach(o=>o.classList.remove('sel'));
-  document.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
-  document.querySelectorAll('.billete').forEach(b=>b.classList.remove('ck'));
-  ['fc1','fc2','fc3'].forEach((id,i)=>clearFirma(id,'fp'+(i+1)));
-  setStep(1);initCanvas('fc1','fa1');
-}
-
-// ── CANVAS ───────────────────────────────────────────────────────
-function initCanvas(id,areaId){
-  if(ci[id]) return;
-  const canvas=document.getElementById(id),area=document.getElementById(areaId);
-  if(!canvas||!area) return;
-  canvas.width=area.offsetWidth||600;canvas.height=area.offsetHeight||96;
-  const ctx=canvas.getContext('2d');let drawing=false;
-  const ph=()=>document.getElementById(id.replace('fc','fp'));
-  const pos=e=>{const r=canvas.getBoundingClientRect(),s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};};
-  canvas.addEventListener('mousedown',e=>{drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);});
-  canvas.addEventListener('mousemove',e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.strokeStyle='#1a1a18';ctx.lineWidth=2;ctx.lineCap='round';ctx.stroke();const el=ph();if(el)el.style.display='none';});
-  canvas.addEventListener('mouseup',()=>drawing=false);
-  canvas.addEventListener('mouseleave',()=>drawing=false);
-  canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
-  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.strokeStyle='#1a1a18';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();const el=ph();if(el)el.style.display='none';},{passive:false});
-  canvas.addEventListener('touchend',()=>drawing=false);
-  ci[id]=true;
-}
-function clearFirma(cid,pid){
-  const c=document.getElementById(cid);if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);
-  const p=document.getElementById(pid);if(p)p.style.display='';
-}
-
-// ── PDF ──────────────────────────────────────────────────────────
-function pdfHeader(doc,titulo){
-  doc.setFillColor(26,26,24);doc.rect(0,0,210,22,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
-  doc.text('GESTIÓN DE MÁQUINAS — SALA',14,10);
-  doc.setFontSize(9);doc.setFont('helvetica','normal');
-  doc.text(titulo,14,17);
-  doc.setTextColor(180,180,180);
-  doc.text(new Date().toLocaleDateString('es-AR'),196,17,{align:'right'});
-  doc.setTextColor(40,40,40);return 30;
-}
-function pdfSec(doc,y,t){
-  doc.setFillColor(245,244,240);doc.rect(14,y,182,7,'F');
-  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(100,100,94);
-  doc.text(t.toUpperCase(),16,y+5);doc.setTextColor(40,40,40);return y+11;
-}
-function pdfRow(doc,y,lbl,val){
-  doc.setFontSize(9);doc.setFont('helvetica','normal');
-  doc.setTextColor(120,120,114);doc.text(lbl,14,y);
-  doc.setTextColor(26,26,24);doc.setFont('helvetica','bold');doc.text(String(val||'—'),80,y);
-  doc.setFont('helvetica','normal');return y+7;
-}
-function pdfCheck(doc,y,lbl,ok){
-  const cx=18,cy=y-2.5;
-  doc.setFillColor(ok?22:210,ok?101:50,ok?52:50);
-  doc.circle(cx,cy,3,'F');
-  doc.setFontSize(7.5);doc.setTextColor(ok?22:190,ok?80:40,ok?40:40);
-  doc.text(ok?'OK':'—',cx,cy+0.5,{align:'center'});
-  doc.setTextColor(26,26,24);doc.setFontSize(9);doc.text(lbl,24,y);
-  return y+6.5;
-}
-function pdfFirma(doc,y,lbl,dataURL){
-  doc.setFontSize(8);doc.setTextColor(120,120,114);doc.text(lbl,14,y);y+=4;
-  if(dataURL){doc.addImage(dataURL,'PNG',14,y,80,25);doc.setDrawColor(200,200,196);doc.rect(14,y,80,25);}
-  else{doc.setDrawColor(200,200,196);doc.rect(14,y,80,25);doc.setFontSize(8);doc.setTextColor(180,180,174);doc.text('Sin firma registrada',54,y+13,{align:'center'});}
-  doc.setDrawColor(0);doc.setTextColor(40,40,40);return y+30;
-}
-function pdfFooter(doc){
-  doc.setFontSize(7);doc.setTextColor(160,160,154);
-  doc.text('Documento generado automáticamente — Sistema de gestión de sala',105,290,{align:'center'});
-}
-function maybeNewPage(doc,y,needed){
-  if(y+needed>275){doc.addPage();return 20;}return y;
-}
-
-function genPDFEgreso(){
-  if(!window.jspdf){toast('Cargando PDF...');return;}
-  const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});
-  let y=pdfHeader(doc,'Acta de egreso de máquina');
-  y=pdfSec(doc,y,'Identificación');
-  y=pdfRow(doc,y,'N° de máquina',gv('e_maquina'));
-  y=pdfRow(doc,y,'N° de isla',gv('e_isla'));
-  y=pdfRow(doc,y,'Fecha y hora',fmtDT(gv('e_fecha')));
-  y=pdfRow(doc,y,'Motivo del egreso',motivo||'—');y+=4;
-  y=pdfSec(doc,y,'Contadores');
-  y=pdfRow(doc,y,'Coin In',gv('e_coin_in'));
-  y=pdfRow(doc,y,'Coin Out',gv('e_coin_out'));
-  y=pdfRow(doc,y,'% Devolución',gv('e_pct')!=='—'?gv('e_pct')+'%':'—');
-  y=pdfRow(doc,y,'Jackpot',gv('e_jackpot'));
-  y=pdfRow(doc,y,'Prog. general',gv('e_prog_gen'));
-  const progs=[1,2,3,4,5].map(i=>({n:i,v:progVal('e_p'+i)})).filter(p=>p.v!=null);
-  if(progs.length){y+=4;y=pdfSec(doc,y,'Progresivos ($ ARS)');progs.forEach(p=>{y=pdfRow(doc,y,'Prog '+p.n,fmtARS(p.v));});}
-  y+=4;y=pdfSec(doc,y,'Firma del responsable');
-  y=pdfFirma(doc,y,'Responsable del egreso',getFirma('fc1'));
-  pdfFooter(doc);
-  doc.save(`egreso_maq_${gv('e_maquina')}_${Date.now()}.pdf`);
-  toast('PDF descargado');
-}
-
-function genPDFFinal(){
-  if(!window.jspdf){toast('Cargando PDF...');return;}
-  const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});
-  let y=pdfHeader(doc,'Acta completa — Egreso, reparación e inspección');
-  y=pdfSec(doc,y,'Egreso — Identificación');
-  y=pdfRow(doc,y,'N° de máquina',datos.maquina);y=pdfRow(doc,y,'N° de isla',datos.isla);
-  y=pdfRow(doc,y,'Fecha y hora',datos.fecha);y=pdfRow(doc,y,'Motivo',datos.motivo);y+=3;
-  y=pdfSec(doc,y,'Egreso — Contadores');
-  y=pdfRow(doc,y,'Coin In',datos.coin_in);y=pdfRow(doc,y,'Coin Out',datos.coin_out);
-  y=pdfRow(doc,y,'% Devolución',datos.pct!=='—'?datos.pct+'%':'—');
-  y=pdfRow(doc,y,'Jackpot',datos.jackpot);
-  [1,2,3,4,5].filter(i=>datos['p'+i]!=null).forEach(i=>{y=pdfRow(doc,y,'Prog '+i,fmtARS(datos['p'+i]));});
-  y+=3;y=pdfSec(doc,y,'Firma de egreso');
-  y=pdfFirma(doc,y,'Responsable del egreso',datos.firma_egreso);y+=3;
-  y=maybeNewPage(doc,y,45);
-  y=pdfSec(doc,y,'Reparación técnica');
-  y=pdfRow(doc,y,'Técnico',datos.tecnico);y=pdfRow(doc,y,'Fecha reparación',datos.fecha_rep);
-  if(datos.trabajo&&datos.trabajo!=='—'){
-    doc.setFontSize(9);doc.setTextColor(120,120,114);doc.text('Trabajo realizado:',14,y);y+=5;
-    doc.setTextColor(26,26,24);
-    const lines=doc.splitTextToSize(datos.trabajo,182);doc.text(lines,14,y);y+=lines.length*5+3;
-  }
-  y=pdfFirma(doc,y,'Firma del técnico',datos.firma_tecnico);y+=3;
-  y=maybeNewPage(doc,y,55);
-  y=pdfSec(doc,y,'Inspección — Controles generales');
-  (datos.checks_gen||[]).forEach(c=>{y=maybeNewPage(doc,y,8);y=pdfCheck(doc,y,c.label,c.ok);});y+=3;
-  y=maybeNewPage(doc,y,65);
-  y=pdfSec(doc,y,'Inspección — Aceptación de billetes');
-  const bills=datos.billetes||[];
-  for(let i=0;i<bills.length;i+=2){
-    y=maybeNewPage(doc,y,8);
-    const b1=bills[i],b2=bills[i+1];
-    const cx=18,cy=y-2.5;
-    doc.setFillColor(b1.ok?22:210,b1.ok?101:50,b1.ok?52:50);doc.circle(cx,cy,3,'F');
-    doc.setFontSize(7.5);doc.setTextColor(b1.ok?22:190,b1.ok?80:40,b1.ok?40:40);doc.text(b1.ok?'OK':'—',cx,cy+0.5,{align:'center'});
-    doc.setTextColor(26,26,24);doc.setFontSize(9);doc.text(b1.label,24,y);
-    if(b2){
-      doc.setFillColor(b2.ok?22:210,b2.ok?101:50,b2.ok?52:50);doc.circle(cx+95,cy,3,'F');
-      doc.setFontSize(7.5);doc.setTextColor(b2.ok?22:190,b2.ok?80:40,b2.ok?40:40);doc.text(b2.ok?'OK':'—',cx+95,cy+0.5,{align:'center'});
-      doc.setTextColor(26,26,24);doc.setFontSize(9);doc.text(b2.label,24+95,y);
-    }
-    y+=7;
-  }
-  y+=3;y=maybeNewPage(doc,y,35);
-  y=pdfSec(doc,y,'Inspección — Sistema de pagos');
-  (datos.checks_pago||[]).forEach(c=>{y=maybeNewPage(doc,y,8);y=pdfCheck(doc,y,c.label,c.ok);});y+=3;
-  if(datos.obs&&datos.obs!=='—'){
-    doc.setFontSize(8);doc.setTextColor(120,120,114);doc.text('Observaciones:',14,y);y+=5;
-    doc.setTextColor(26,26,24);
-    const lines=doc.splitTextToSize(datos.obs,182);doc.text(lines,14,y);y+=lines.length*5+3;
-  }
-  y=maybeNewPage(doc,y,42);
-  y=pdfSec(doc,y,'Firma del inspector');
-  y=pdfFirma(doc,y,'Inspector de reingreso',datos.firma_inspector);
-  pdfFooter(doc);
-  doc.save(`acta_completa_maq_${datos.maquina}_${Date.now()}.pdf`);
-  toast('PDF descargado');
-}
-
-
-// ── GOOGLE SHEETS + EMAIL ────────────────────────────────────────
-const fmtP = n => n != null ? new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2}).format(n) : '';
-
-function enviarEgreso() {
-  const payload = {
-    tipo: 'egreso',
-    maquina: datos.maquina, isla: datos.isla, fecha: datos.fecha,
-    motivo: datos.motivo, coin_in: datos.coin_in, coin_out: datos.coin_out,
-    pct: datos.pct, jackpot: datos.jackpot,
-    p1: fmtP(datos.p1), p2: fmtP(datos.p2), p3: fmtP(datos.p3),
-    p4: fmtP(datos.p4), p5: fmtP(datos.p5)
-  };
-  postSheets(payload, 'Egreso registrado — aviso enviado');
-}
-
-function enviarReparacion() {
-  const payload = {
-    tipo: 'reparacion',
-    maquina: datos.maquina, isla: datos.isla, fecha: datos.fecha,
-    motivo: datos.motivo,
-    tecnico: datos.tecnico, fecha_rep: datos.fecha_rep, trabajo: datos.trabajo
-  };
-  postSheets(payload, 'Reparación registrada — aviso enviado');
-}
-
-function enviarReingreso() {
-  const payload = {
-    tipo: 'reingreso',
-    maquina: datos.maquina, isla: datos.isla, fecha: datos.fecha,
-    motivo: datos.motivo, coin_in: datos.coin_in, coin_out: datos.coin_out,
-    pct: datos.pct, jackpot: datos.jackpot,
-    p1: fmtP(datos.p1), p2: fmtP(datos.p2), p3: fmtP(datos.p3),
-    p4: fmtP(datos.p4), p5: fmtP(datos.p5),
-    tecnico: datos.tecnico, fecha_rep: datos.fecha_rep, trabajo: datos.trabajo,
-    inspector: datos.inspector, fecha_insp: datos.fecha_insp, obs: datos.obs,
-    checks_gen: datos.checks_gen, billetes: datos.billetes, checks_pago: datos.checks_pago
-  };
-  postSheets(payload, 'Reingreso aprobado — PDF enviado por mail');
-}
-
-function postSheets(payload, msg) {
-  fetch(SHEETS_URL, {
+// ── API ───────────────────────────────────────────────────────
+async function apiCall(params) {
+  var response = await fetch(API_URL, {
     method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-  .then(() => toast(msg))
-  .catch(() => toast('Sin conexión — PDF descargado igual'));
+    body: JSON.stringify(params),
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+  });
+  if(!response.ok) throw new Error('HTTP '+response.status);
+  return await response.json();
 }
 
-// ── INIT ─────────────────────────────────────────────────────────
-const ef=document.getElementById('e_fecha');
-if(ef) ef.value=new Date().toISOString().slice(0,16);
-initCanvas('fc1','fa1');
+async function cargarDatos() {
+  showLoading('Cargando registros...');
+  try {
+    var result = await apiCall({ action: 'getAll' });
+    if(result.registros) registros = result.registros.map(parseRegistro);
+  } catch(e) {
+    showAlert('Error al conectar. Verificá tu conexión.','danger');
+  }
+  hideLoading();
+  updateCounters();
+  renderLista();
+}
+
+function parseRegistro(r) {
+  return {
+    id: r.id, estado: r.estado,
+    egreso: { maquina:String(r.e_maquina), isla:String(r.e_isla), fecha:r.e_fecha, motivo:r.e_motivo,
+      coinin:r.e_coinin, coinout:r.e_coinout, jackpot:r.e_jackpot,
+      prog1:r.e_prog1, prog2:r.e_prog2, prog3:r.e_prog3, prog4:r.e_prog4,
+      devolucion:r.e_devolucion, operador:r.e_operador, firma:r.e_firma, foto:r.e_foto },
+    tecnico: r.t_fecha ? { fecha:r.t_fecha, informe:r.t_informe, solucion:r.t_solucion,
+      tecnico:r.t_tecnico, firma:r.t_firma, maquina:String(r.e_maquina), isla:String(r.e_isla) } : null,
+    inspector: r.i_fecha ? { fecha:r.i_fecha, informe:r.i_informe, coinin:r.i_coinin,
+      devolucion:r.i_devolucion, denominacion:r.i_denominacion,
+      apuestaMin:r.i_apuesta_min, apuestaMax:r.i_apuesta_max,
+      mdc:r.i_mdc, inspector:r.i_inspector, firma:r.i_firma,
+      checksBilletes:tryParse(r.i_checks_billetes,{}),
+      checksExtras:tryParse(r.i_checks_extras,{}), maquina:String(r.e_maquina), isla:String(r.e_isla) } : null
+  };
+}
+
+function tryParse(str,fallback){ try{ return JSON.parse(str); }catch(e){ return fallback; } }
+
+function flattenRegistro(r) {
+  return {
+    id:r.id, estado:r.estado,
+    e_maquina:r.egreso.maquina, e_isla:r.egreso.isla, e_fecha:r.egreso.fecha, e_motivo:r.egreso.motivo,
+    e_coinin:r.egreso.coinin||'', e_coinout:r.egreso.coinout||'', e_jackpot:r.egreso.jackpot||'',
+    e_prog1:r.egreso.prog1||'', e_prog2:r.egreso.prog2||'', e_prog3:r.egreso.prog3||'', e_prog4:r.egreso.prog4||'',
+    e_devolucion:r.egreso.devolucion||'', e_operador:r.egreso.operador, e_firma:r.egreso.firma||'',
+    e_foto:r.egreso.foto||'',
+    t_fecha:r.tecnico?r.tecnico.fecha:'', t_informe:r.tecnico?r.tecnico.informe:'',
+    t_solucion:r.tecnico?r.tecnico.solucion:'', t_tecnico:r.tecnico?r.tecnico.tecnico:'', t_firma:r.tecnico?r.tecnico.firma||'':'',
+    i_fecha:r.inspector?r.inspector.fecha:'', i_informe:r.inspector?r.inspector.informe:'',
+    i_coinin:r.inspector?r.inspector.coinin:'', i_devolucion:r.inspector?r.inspector.devolucion:'',
+    i_denominacion:r.inspector?r.inspector.denominacion:'', i_apuesta_min:r.inspector?r.inspector.apuestaMin:'',
+    i_apuesta_max:r.inspector?r.inspector.apuestaMax:'', i_mdc:r.inspector?r.inspector.mdc:'',
+    i_inspector:r.inspector?r.inspector.inspector:'', i_firma:r.inspector?r.inspector.firma||'':'',
+    i_checks_billetes:r.inspector?JSON.stringify(r.inspector.checksBilletes):'',
+    i_checks_extras:r.inspector?JSON.stringify(r.inspector.checksExtras):'',
+    created_at:r.created_at||new Date().toISOString(), updated_at:new Date().toISOString()
+  };
+}
+
+async function guardarEnAPI(action, data) {
+  try {
+    var result = await apiCall({ action:action, data:data });
+    if(result.error) throw new Error(result.error);
+    return true;
+  } catch(e) {
+    showAlert('Error al guardar: '+e.message,'danger');
+    return false;
+  }
+}
+
+// ── FOTO ─────────────────────────────────────────────────────
+function previewFoto(inputId) {
+  var input = document.getElementById(inputId);
+  if(!input.files||!input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('e-foto-img').src = e.target.result;
+    document.getElementById('e-foto-preview').style.display = '';
+    document.getElementById('e-foto-data').value = e.target.result;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function clearFoto() {
+  document.getElementById('e-foto-preview').style.display = 'none';
+  document.getElementById('e-foto-img').src = '';
+  document.getElementById('e-foto-data').value = '';
+  document.getElementById('e-foto-camara').value = '';
+  document.getElementById('e-foto-archivo').value = '';
+}
+
+function getFotoData() {
+  var el = document.getElementById('e-foto-data');
+  return el ? el.value : '';
+}
+
+// ── CANVAS ────────────────────────────────────────────────────
+function initCanvas(id) {
+  var canvas = document.getElementById(id);
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  canvas._drawing = false; canvas._hasData = false;
+  function getPos(e) {
+    var rect = canvas.getBoundingClientRect();
+    var sx = canvas.width/rect.width, sy = canvas.height/rect.height;
+    if(e.touches) return {x:(e.touches[0].clientX-rect.left)*sx, y:(e.touches[0].clientY-rect.top)*sy};
+    return {x:(e.clientX-rect.left)*sx, y:(e.clientY-rect.top)*sy};
+  }
+  canvas.addEventListener('mousedown', function(e){ canvas._drawing=true; var p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.strokeStyle='#c8a84b'; ctx.lineWidth=2; ctx.lineCap='round'; });
+  canvas.addEventListener('mousemove', function(e){ if(!canvas._drawing) return; var p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); canvas._hasData=true; });
+  canvas.addEventListener('mouseup', function(){ canvas._drawing=false; });
+  canvas.addEventListener('mouseleave', function(){ canvas._drawing=false; });
+  canvas.addEventListener('touchstart', function(e){ e.preventDefault(); canvas._drawing=true; var p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.strokeStyle='#c8a84b'; ctx.lineWidth=2; ctx.lineCap='round'; },{passive:false});
+  canvas.addEventListener('touchmove', function(e){ e.preventDefault(); if(!canvas._drawing) return; var p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); canvas._hasData=true; },{passive:false});
+  canvas.addEventListener('touchend', function(){ canvas._drawing=false; });
+}
+function clearCanvas(id){ var c=document.getElementById(id); c.getContext('2d').clearRect(0,0,c.width,c.height); c._hasData=false; }
+function getFirma(id){ var c=document.getElementById(id); return c._hasData?c.toDataURL():''; }
+
+// ── HELPERS ───────────────────────────────────────────────────
+function nowDT(){ var d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
+function formatFecha(f){ if(!f) return '-'; try{ return new Date(f).toLocaleString('es-AR'); }catch(e){ return f; } }
+function formatPesos(v){ if(!v) return '-'; return '$ '+String(v).replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+
+// ── EGRESO ────────────────────────────────────────────────────
+function resetEgresoForm(){
+  ['e-maquina','e-isla','e-coinin','e-coinout','e-jackpot','e-prog1','e-prog2','e-prog3','e-prog4','e-devolucion','e-operador'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('e-motivo').value='';
+  document.getElementById('e-fecha').value=nowDT();
+  clearCanvas('canvas-egreso');
+  clearFoto();
+}
+
+async function guardarEgreso(){
+  var maquina=document.getElementById('e-maquina').value.trim();
+  var isla=document.getElementById('e-isla').value.trim();
+  var fecha=document.getElementById('e-fecha').value;
+  var motivo=document.getElementById('e-motivo').value;
+  var operador=document.getElementById('e-operador').value.trim();
+  if(!maquina||!isla||!fecha||!motivo||!operador){ showAlert('Completar campos obligatorios: Máquina, Isla, Fecha, Motivo y Operador.','info'); return; }
+  var btn=document.getElementById('btn-guardar-egreso');
+  btn.disabled=true; showLoading('Guardando egreso y enviando mails...');
+  var id='REG-'+Date.now();
+  var registro={ id:id, estado:'egreso', created_at:new Date().toISOString(),
+    egreso:{ maquina:maquina, isla:isla, fecha:fecha, motivo:motivo,
+      coinin:document.getElementById('e-coinin').value, coinout:document.getElementById('e-coinout').value,
+      jackpot:document.getElementById('e-jackpot').value, prog1:document.getElementById('e-prog1').value,
+      prog2:document.getElementById('e-prog2').value, prog3:document.getElementById('e-prog3').value,
+      prog4:document.getElementById('e-prog4').value, devolucion:document.getElementById('e-devolucion').value,
+      operador:operador, firma:getFirma('canvas-egreso'), foto:getFotoData() }, tecnico:null, inspector:null };
+  var ok=await guardarEnAPI('save', flattenRegistro(registro));
+  hideLoading(); btn.disabled=false;
+  if(!ok) return;
+  registros.push(registro); updateCounters(); resetEgresoForm(); showTab('lista');
+  showModal('📤 Aviso Enviado','Máquina '+maquina+' · Isla '+isla+' — '+motivo,
+    '<div style="display:flex;flex-direction:column;gap:10px;">'+
+    '<div class="alert alert-info">📨 Mail enviado a <strong>TÉCNICOS</strong> — Máquina '+maquina+' fuera de servicio</div>'+
+    '<div class="alert alert-info">📨 Mail enviado a <strong>JUEGO</strong> — Máquina '+maquina+' no disponible</div>'+
+    '</div>');
+}
+
+// ── TECNICO ───────────────────────────────────────────────────
+function buscarParaTecnico(){
+  var q=document.getElementById('t-buscar-maq').value.trim().toLowerCase();
+  var cont=document.getElementById('tecnico-resultados');
+  document.getElementById('tecnico-form').style.display='none';
+  if(!q){ cont.innerHTML=''; return; }
+  var matches=registros.filter(function(r){ return r.estado==='egreso'&&String(r.egreso.maquina).toLowerCase().indexOf(q)>=0; });
+  if(!matches.length){ cont.innerHTML='<p style="color:var(--text-muted);font-size:13px;">Sin resultados.</p>'; return; }
+  cont.innerHTML=matches.map(function(r){
+    return '<div class="record-card" style="margin-bottom:8px;"><span class="rc-status">🔴</span>'+
+    '<div class="rc-info"><h3>Máquina '+r.egreso.maquina+' · Isla '+r.egreso.isla+'</h3>'+
+    '<p>'+r.egreso.motivo+' · '+formatFecha(r.egreso.fecha)+'</p></div>'+
+    '<div class="rc-actions"><button class="btn btn-sm btn-primary" onclick="seleccionarTecnico(\''+r.id+'\')">Seleccionar</button></div></div>';
+  }).join('');
+}
+
+function seleccionarTecnico(id){
+  currentTecnicoId=id;
+  var r=registros.find(function(x){ return x.id===id; });
+  document.getElementById('t-maquina').value=r.egreso.maquina;
+  document.getElementById('t-isla').value=r.egreso.isla;
+  document.getElementById('t-fecha').value=nowDT();
+  document.getElementById('t-informe').value=''; document.getElementById('t-solucion').value='';
+  clearCanvas('canvas-tecnico');
+  document.getElementById('tecnico-egreso-ref').innerHTML='Reparando: Máquina <strong>'+r.egreso.maquina+'</strong> · Isla <strong>'+r.egreso.isla+'</strong> · Motivo: <strong>'+r.egreso.motivo+'</strong>';
+  document.getElementById('tecnico-resultados').innerHTML=''; document.getElementById('t-buscar-maq').value='';
+  document.getElementById('tecnico-form').style.display='';
+}
+
+function cancelarTecnico(){ currentTecnicoId=null; document.getElementById('tecnico-form').style.display='none'; document.getElementById('tecnico-resultados').innerHTML=''; document.getElementById('t-buscar-maq').value=''; }
+
+async function guardarTecnico(){
+  if(!currentTecnicoId) return;
+  var solucion=document.getElementById('t-solucion').value.trim();
+  var tecnico=document.getElementById('t-tecnico').value.trim();
+  var fecha=document.getElementById('t-fecha').value;
+  if(!solucion||!tecnico||!fecha){ showAlert('Completar todos los campos.','info'); return; }
+  var btn=document.getElementById('btn-guardar-tecnico');
+  btn.disabled=true; showLoading('Guardando reparación y enviando mails...');
+  var idx=registros.findIndex(function(x){ return x.id===currentTecnicoId; });
+  registros[idx].estado='tecnico';
+  registros[idx].tecnico={ fecha:fecha, informe:document.getElementById('t-informe').value,
+    maquina:registros[idx].egreso.maquina, isla:registros[idx].egreso.isla,
+    solucion:solucion, tecnico:tecnico, firma:getFirma('canvas-tecnico') };
+  var ok=await guardarEnAPI('update', flattenRegistro(registros[idx]));
+  hideLoading(); btn.disabled=false;
+  if(!ok) return;
+  var maq=registros[idx].egreso.maquina, isla=registros[idx].egreso.isla;
+  updateCounters(); cancelarTecnico(); showTab('lista');
+  showModal('🔔 Alerta Enviada','Máquina '+maq+' · Isla '+isla,
+    '<div style="display:flex;flex-direction:column;gap:10px;">'+
+    '<div class="alert alert-success">📨 Mail enviado a <strong>TÉCNICOS</strong> — Máquina '+maq+' reparada, pendiente de inspección</div>'+
+    '<div class="alert alert-success">📨 Mail enviado a <strong>JUEGO</strong> — Máquina '+maq+' lista para inspector</div>'+
+    '</div>');
+}
+
+// ── INSPECTOR ─────────────────────────────────────────────────
+function initChecklist(){
+  document.getElementById('checklist-billetes').innerHTML=billetes.map(function(b,i){
+    return '<div class="check-item"><span>'+b+'</span><div class="check-btns">'+
+    '<button class="check-btn" id="btn-b-'+i+'-ok" onclick="setCheck(\'b\','+i+',\'ok\')">✓ OK</button>'+
+    '<button class="check-btn" id="btn-b-'+i+'-fail" onclick="setCheck(\'b\','+i+',\'fail\')">✗ FALLA</button>'+
+    '</div></div>';
+  }).join('');
+  document.getElementById('checklist-extras').innerHTML=extras.map(function(ex,i){
+    return '<div class="check-item"><span>'+ex+'</span><div class="check-btns">'+
+    '<button class="check-btn" id="btn-x-'+i+'-ok" onclick="setCheck(\'x\','+i+',\'ok\')">✓ OK</button>'+
+    '<button class="check-btn" id="btn-x-'+i+'-fail" onclick="setCheck(\'x\','+i+',\'fail\')">✗ FALLA</button>'+
+    '</div></div>';
+  }).join('');
+}
+
+function setCheck(type,idx,val){
+  var key=type+'-'+idx; checkState[key]=val;
+  ['ok','fail'].forEach(function(v){ document.getElementById('btn-'+key+'-'+v).className='check-btn'+(v===val?' '+v:''); });
+}
+
+function buscarParaInspector(){
+  var q=document.getElementById('i-buscar-maq').value.trim().toLowerCase();
+  var cont=document.getElementById('inspector-resultados');
+  document.getElementById('inspector-form').style.display='none';
+  if(!q){ cont.innerHTML=''; return; }
+  var matches=registros.filter(function(r){ return r.estado==='tecnico'&&String(r.egreso.maquina).toLowerCase().indexOf(q)>=0; });
+  if(!matches.length){ cont.innerHTML='<p style="color:var(--text-muted);font-size:13px;">Sin resultados.</p>'; return; }
+  cont.innerHTML=matches.map(function(r){
+    return '<div class="record-card" style="margin-bottom:8px;"><span class="rc-status">🔧</span>'+
+    '<div class="rc-info"><h3>Máquina '+r.egreso.maquina+' · Isla '+r.egreso.isla+'</h3>'+
+    '<p>'+r.tecnico.solucion.substring(0,60)+'... · Técnico: '+r.tecnico.tecnico+'</p></div>'+
+    '<div class="rc-actions"><button class="btn btn-sm btn-primary" onclick="seleccionarInspector(\''+r.id+'\')">Seleccionar</button></div></div>';
+  }).join('');
+}
+
+function seleccionarInspector(id){
+  currentInspectorId=id;
+  var r=registros.find(function(x){ return x.id===id; });
+  document.getElementById('i-maquina').value=r.egreso.maquina;
+  document.getElementById('i-isla').value=r.egreso.isla;
+  document.getElementById('i-informe').value=r.tecnico.informe||'';
+  document.getElementById('i-fecha').value=nowDT();
+  ['i-coinin','i-devolucion','i-denominacion','i-apuesta-min','i-apuesta-max','i-mdc','i-inspector'].forEach(function(id){ document.getElementById(id).value=''; });
+  clearCanvas('canvas-inspector');
+  Object.keys(checkState).forEach(function(k){ delete checkState[k]; });
+  initChecklist();
+  document.getElementById('inspector-ref').innerHTML='Inspeccionando: Máquina <strong>'+r.egreso.maquina+'</strong> · Isla <strong>'+r.egreso.isla+'</strong>';
+  document.getElementById('inspector-resultados').innerHTML=''; document.getElementById('i-buscar-maq').value='';
+  document.getElementById('inspector-form').style.display='';
+}
+
+function cancelarInspector(){ currentInspectorId=null; document.getElementById('inspector-form').style.display='none'; document.getElementById('inspector-resultados').innerHTML=''; document.getElementById('i-buscar-maq').value=''; }
+
+async function guardarInspector(){
+  if(!currentInspectorId) return;
+  var inspector=document.getElementById('i-inspector').value.trim();
+  var fecha=document.getElementById('i-fecha').value;
+  if(!inspector||!fecha){ showAlert('Completar nombre del inspector y fecha.','info'); return; }
+  var btn=document.getElementById('btn-guardar-inspector');
+  btn.disabled=true; showLoading('Guardando inspección y enviando mails...');
+  var idx=registros.findIndex(function(x){ return x.id===currentInspectorId; });
+  registros[idx].estado='completo';
+  registros[idx].inspector={
+    fecha:fecha, maquina:registros[idx].egreso.maquina, isla:registros[idx].egreso.isla,
+    informe:document.getElementById('i-informe').value, coinin:document.getElementById('i-coinin').value,
+    devolucion:document.getElementById('i-devolucion').value, denominacion:document.getElementById('i-denominacion').value,
+    apuestaMin:document.getElementById('i-apuesta-min').value, apuestaMax:document.getElementById('i-apuesta-max').value,
+    mdc:document.getElementById('i-mdc').value, inspector:inspector,
+    checksBilletes:billetes.reduce(function(a,b,i){ a[b]=checkState['b-'+i]||''; return a; },{}),
+    checksExtras:extras.reduce(function(a,ex,i){ a[ex]=checkState['x-'+i]||''; return a; },{}),
+    firma:getFirma('canvas-inspector')
+  };
+  var ok=await guardarEnAPI('update', flattenRegistro(registros[idx]));
+  hideLoading(); btn.disabled=false;
+  if(!ok) return;
+  updateCounters(); cancelarInspector(); showTab('lista');
+  showAlert('✅ Máquina '+registros[idx].egreso.maquina+' reingresada al servicio.','success');
+}
+
+// ── ESTADÍSTICAS ──────────────────────────────────────────────
+function renderEstadisticas(){
+  var total=registros.length;
+  var pend=registros.filter(function(r){ return r.estado==='egreso'||r.estado==='tecnico'; }).length;
+  var comp=registros.filter(function(r){ return r.estado==='completo'; }).length;
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-pendientes').textContent=pend;
+  document.getElementById('stat-completo').textContent=comp;
+
+  var contMaq={};
+  registros.forEach(function(r){ var k='Máq. '+r.egreso.maquina+' · Isla '+r.egreso.isla; contMaq[k]=(contMaq[k]||0)+1; });
+  var rankMaq=Object.entries(contMaq).sort(function(a,b){ return b[1]-a[1]; }).slice(0,10);
+  var maxMaq=rankMaq.length?rankMaq[0][1]:1;
+  var colors=['var(--danger)','var(--warning)','var(--accent)','var(--info)'];
+  var contRanking=document.getElementById('ranking-maquinas');
+  if(!rankMaq.length){ contRanking.innerHTML='<p style="color:var(--text-muted);font-size:13px;">Sin datos aún.</p>'; }
+  else {
+    contRanking.innerHTML=rankMaq.map(function(entry,i){
+      var nombre=entry[0], cant=entry[1];
+      var pct=Math.round((cant/maxMaq)*100);
+      var color=colors[Math.min(i,colors.length-1)];
+      var medal=i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'';
+      return '<div class="bar-row"><div class="bar-label"><span style="font-weight:600;">'+medal+nombre+'</span>'+
+        '<span style="font-weight:700;color:'+color+';">'+cant+' egreso'+(cant>1?'s':'')+'</span></div>'+
+        '<div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;background:'+color+';"></div></div></div>';
+    }).join('');
+  }
+
+  var contMotivo={};
+  registros.forEach(function(r){ contMotivo[r.egreso.motivo]=(contMotivo[r.egreso.motivo]||0)+1; });
+  var rankMotivo=Object.entries(contMotivo).sort(function(a,b){ return b[1]-a[1]; });
+  var maxMot=rankMotivo.length?rankMotivo[0][1]:1;
+  var contMotivos=document.getElementById('ranking-motivos');
+  if(!rankMotivo.length){ contMotivos.innerHTML='<p style="color:var(--text-muted);font-size:13px;">Sin datos aún.</p>'; }
+  else {
+    contMotivos.innerHTML=rankMotivo.map(function(entry){
+      var motivo=entry[0], cant=entry[1];
+      var pct=Math.round((cant/maxMot)*100);
+      return '<div class="bar-row"><div class="bar-label"><span>'+motivo+'</span>'+
+        '<span style="font-weight:700;color:var(--info);">'+cant+'</span></div>'+
+        '<div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;background:var(--info);"></div></div></div>';
+    }).join('');
+  }
+
+  var tiempos=registros.filter(function(r){ return r.tecnico&&r.egreso.fecha&&r.tecnico.fecha; }).map(function(r){
+    var ini=new Date(r.egreso.fecha), fin=new Date(r.tecnico.fecha);
+    return (fin-ini)/(1000*60*60);
+  }).filter(function(h){ return h>0&&h<720; });
+  var contTiempo=document.getElementById('stats-tiempo');
+  if(!tiempos.length){ contTiempo.innerHTML='<p style="color:var(--text-muted);font-size:13px;">Sin datos suficientes aún.</p>'; }
+  else {
+    var prom=tiempos.reduce(function(a,b){ return a+b; },0)/tiempos.length;
+    var min=Math.min.apply(null,tiempos);
+    var max=Math.max.apply(null,tiempos);
+    function fmtH(h){ return h<1?Math.round(h*60)+' min':h.toFixed(1)+' hs'; }
+    contTiempo.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center;">'+
+      '<div><p style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">Promedio</p>'+
+      '<p style="font-size:22px;font-weight:600;color:var(--accent);">'+fmtH(prom)+'</p></div>'+
+      '<div><p style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">Más rápido</p>'+
+      '<p style="font-size:22px;font-weight:600;color:var(--success);">'+fmtH(min)+'</p></div>'+
+      '<div><p style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">Más lento</p>'+
+      '<p style="font-size:22px;font-weight:600;color:var(--danger);">'+fmtH(max)+'</p></div></div>'+
+      '<p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:10px;">Basado en '+tiempos.length+' reparación'+(tiempos.length>1?'es':'')+'</p>';
+  }
+}
+
+// ── REPORTE FIN DE DÍA ───────────────────────────────────────
+function calcularTiempoFuera(fechaEgreso) {
+  if(!fechaEgreso) return '-';
+  var ini = new Date(fechaEgreso);
+  var ahora = new Date();
+  var diffMs = ahora - ini;
+  if(diffMs < 0) return '-';
+  var horas = Math.floor(diffMs/(1000*60*60));
+  var dias = Math.floor(horas/24);
+  var horasRestantes = horas%24;
+  if(dias>0) return dias+'d '+horasRestantes+'h';
+  var mins = Math.floor((diffMs%(1000*60*60))/(1000*60));
+  if(horas>0) return horas+'h '+mins+'m';
+  return mins+'m';
+}
+
+function renderReporte() {
+  var fuera = registros.filter(function(r){ return r.estado==='egreso'||r.estado==='tecnico'; });
+  fuera.sort(function(a,b){ return new Date(a.egreso.fecha) - new Date(b.egreso.fecha); });
+
+  var ahora = new Date();
+  var fechaStr = ahora.toLocaleDateString('es-AR') + ' ' + ahora.toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+
+  var texto = 'REPORTE MAQUINAS FUERA DE SERVICIO\n';
+  texto += 'Casino Santa Fe - ' + fechaStr + '\n';
+  texto += '=====================================\n\n';
+
+  if(!fuera.length) {
+    texto += 'No hay maquinas fuera de servicio.\n';
+  } else {
+    fuera.forEach(function(r){
+      var tiempo = calcularTiempoFuera(r.egreso.fecha);
+      texto += 'MTM ' + r.egreso.maquina + ' - ' + tiempo + ' fuera de servicio\n';
+    });
+    texto += '\nTotal: ' + fuera.length + ' maquina' + (fuera.length>1?'s':'') + ' fuera de servicio.';
+  }
+
+  document.getElementById('reporte-texto').value = texto;
+  document.getElementById('reporte-sub').textContent = fuera.length + ' máquina' + (fuera.length!==1?'s':'') + ' fuera de servicio · ' + fechaStr;
+}
+
+function copiarReporte() {
+  var textarea = document.getElementById('reporte-texto');
+  textarea.select();
+  textarea.setSelectionRange(0, 999999);
+  var btn = document.getElementById('btn-copiar-reporte');
+  try {
+    navigator.clipboard.writeText(textarea.value).then(function(){
+      btn.textContent = '✓ Copiado';
+      setTimeout(function(){ btn.textContent = '📋 Copiar texto'; }, 2000);
+    });
+  } catch(e) {
+    document.execCommand('copy');
+    btn.textContent = '✓ Copiado';
+    setTimeout(function(){ btn.textContent = '📋 Copiar texto'; }, 2000);
+  }
+}
+
+// ── LISTA ─────────────────────────────────────────────────────
+function renderLista(){
+  var q=(document.getElementById('search-input').value||'').toLowerCase();
+  var st=document.getElementById('filter-status').value;
+  var list=registros.filter(function(r){
+    var mq=!q||String(r.egreso.maquina).toLowerCase().indexOf(q)>=0||String(r.egreso.isla).toLowerCase().indexOf(q)>=0;
+    var ms=!st||r.estado===st;
+    return mq&&ms;
+  }).slice().reverse();
+  var cont=document.getElementById('lista-records');
+  if(!list.length){ cont.innerHTML='<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:24px;">No hay registros. Presioná 🔄 Actualizar.</p>'; return; }
+  var icons={egreso:'🔴',tecnico:'🔧',completo:'✅'};
+  var labels={egreso:'Egresada',tecnico:'Reparada — Pend. Inspección',completo:'En Servicio'};
+  var bc={egreso:'badge-warning',tecnico:'badge-info',completo:'badge-success'};
+  cont.innerHTML=list.map(function(r){
+    var actions='';
+    if(r.estado==='egreso') actions+='<button class="btn btn-sm" onclick="irTecnico(\''+r.id+'\')">🔧 Reparar</button>';
+    if(r.estado==='tecnico') actions+='<button class="btn btn-sm" onclick="irInspector(\''+r.id+'\')">🔍 Inspeccionar</button>';
+    if(r.estado==='completo') actions+='<button class="btn btn-sm btn-primary" onclick="generarPDF(\''+r.id+'\')">⬇ PDF</button>';
+    return '<div class="record-card"><span class="rc-status">'+icons[r.estado]+'</span>'+
+      '<div class="rc-info"><h3>Máquina '+r.egreso.maquina+' &nbsp;·&nbsp; Isla '+r.egreso.isla+
+      ' &nbsp;&nbsp;<span class="badge '+bc[r.estado]+'">'+labels[r.estado]+'</span></h3>'+
+      '<p>'+r.egreso.motivo+' · Egreso: '+formatFecha(r.egreso.fecha)+' · Operador: '+r.egreso.operador+'</p></div>'+
+      '<div class="rc-actions">'+actions+'</div></div>';
+  }).join('');
+}
+
+function irTecnico(id){ var r=registros.find(function(x){ return x.id===id; }); showTab('tecnico'); document.getElementById('t-buscar-maq').value=r.egreso.maquina; buscarParaTecnico(); }
+function irInspector(id){ var r=registros.find(function(x){ return x.id===id; }); showTab('inspector'); document.getElementById('i-buscar-maq').value=r.egreso.maquina; buscarParaInspector(); }
+
+// ── PDF ───────────────────────────────────────────────────────
+function generarPDF(id){
+  var r=registros.find(function(x){ return x.id===id; });
+  if(!r||r.estado!=='completo') return;
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({unit:'mm',format:'a4'});
+  var W=210, mg=14, y=20;
+  function txt(t,x,yy,sz,st,col){ sz=sz||10;st=st||'normal';col=col||[40,40,40]; doc.setFontSize(sz);doc.setFont('helvetica',st);doc.setTextColor(col[0],col[1],col[2]);doc.text(t,x,yy); }
+  function hLine(yy,c){ c=c||[200,200,200]; doc.setDrawColor(c[0],c[1],c[2]);doc.line(mg,yy,W-mg,yy); }
+  function secHead(title,yy,col){ col=col||[30,30,80]; doc.setFillColor(col[0],col[1],col[2]);doc.rect(mg,yy-5,W-mg*2,8,'F');doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.text(title,mg+3,yy+0.5);return yy+8; }
+  function kv(label,value,x1,x2,yy){ doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(100,100,100);doc.text(label+':',x1,yy);doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);doc.text(String(value||'-'),x2,yy); }
+  doc.setFillColor(26,26,46);doc.rect(0,0,W,22,'F');
+  txt('ACTA DE MANTENIMIENTO CORRECTIVO',mg,10,13,'bold',[200,168,75]);
+  txt('CASINO SANTA FE — GESTIÓN DE MÁQUINAS',mg,17,9,'normal',[180,180,200]);
+  txt('ID: '+r.id,W-mg-40,10,8,'normal',[180,180,200]);
+  txt('Generado: '+new Date().toLocaleString('es-AR'),W-mg-40,17,8,'normal',[180,180,200]);
+  y=30;
+  y=secHead('  ETAPA 1 — EGRESO DE MÁQUINA',y,[30,60,120]);y+=6;
+  kv('N° Máquina',r.egreso.maquina,mg,mg+28,y);kv('N° Isla',r.egreso.isla,90,110,y);kv('Fecha/Hora',formatFecha(r.egreso.fecha),130,152,y);y+=7;
+  kv('Motivo',r.egreso.motivo,mg,mg+28,y);kv('Operador',r.egreso.operador,100,120,y);y+=7;
+  kv('COIN IN',formatPesos(r.egreso.coinin),mg,mg+28,y);kv('COIN OUT',formatPesos(r.egreso.coinout),70,98,y);kv('Jackpot',formatPesos(r.egreso.jackpot),130,148,y);y+=7;
+  kv('Prog.1',formatPesos(r.egreso.prog1),mg,mg+22,y);kv('Prog.2',formatPesos(r.egreso.prog2),60,82,y);kv('Prog.3',formatPesos(r.egreso.prog3),110,130,y);kv('Prog.4',formatPesos(r.egreso.prog4),152,170,y);y+=7;
+  kv('% Devolución',r.egreso.devolucion||'-',mg,mg+28,y);y+=10;
+  if(r.egreso.firma){txt('Firma Operador:',mg,y,8,'bold',[80,80,80]);try{doc.addImage(r.egreso.firma,'PNG',mg,y+2,60,18);}catch(e){}y+=24;}
+  if(r.egreso.foto){
+    if(y>200){doc.addPage();y=20;}
+    txt('Foto de la máquina:',mg,y,8,'bold',[80,80,80]);y+=4;
+    try{ doc.addImage(r.egreso.foto,'JPEG',mg,y,80,60); y+=66; }catch(e){}
+  }
+  hLine(y,[180,180,200]);y+=8;
+  if(y>220){doc.addPage();y=20;}
+  y=secHead('  ETAPA 2 — REPARACIÓN TÉCNICA',y,[30,90,60]);y+=6;
+  kv('N° Informe',r.tecnico.informe||'S/N',mg,mg+25,y);kv('Técnico',r.tecnico.tecnico,75,95,y);kv('Fecha/Hora',formatFecha(r.tecnico.fecha),140,160,y);y+=8;
+  txt('Solución aplicada:',mg,y,9,'bold',[80,80,80]);y+=5;
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);
+  var lines=doc.splitTextToSize(r.tecnico.solucion,W-mg*2);
+  doc.text(lines,mg,y);y+=lines.length*5+4;
+  if(r.tecnico.firma){txt('Firma Técnico:',mg,y,8,'bold',[80,80,80]);try{doc.addImage(r.tecnico.firma,'PNG',mg,y+2,60,18);}catch(e){}y+=24;}
+  hLine(y,[180,180,200]);y+=8;
+  if(y>210){doc.addPage();y=20;}
+  y=secHead('  ETAPA 3 — INSPECCIÓN Y REINGRESO',y,[100,30,30]);y+=6;
+  kv('Inspector',r.inspector.inspector,mg,mg+22,y);kv('Fecha/Hora',formatFecha(r.inspector.fecha),90,110,y);kv('COIN IN',formatPesos(r.inspector.coinin),150,165,y);y+=7;
+  doc.setFillColor(245,240,220);doc.rect(mg,y-4,W-mg*2,30,'F');
+  doc.setDrawColor(200,168,75);doc.rect(mg,y-4,W-mg*2,30,'S');
+  txt('VERIFICACIÓN DE CONFIGURACIÓN',mg+3,y+1,8,'bold',[120,90,10]);y+=7;
+  kv('% Devolución',r.inspector.devolucion||'-',mg+3,mg+28,y);kv('Denominación',r.inspector.denominacion||'-',80,103,y);y+=6;
+  kv('Apuesta Mín.',r.inspector.apuestaMin||'-',mg+3,mg+28,y);kv('Apuesta Máx.',r.inspector.apuestaMax||'-',80,103,y);kv('N° MDC',r.inspector.mdc||'-',140,155,y);y+=16;
+  txt('Control de billetes:',mg,y,9,'bold',[80,80,80]);y+=5;
+  var midX=(W-mg*2)/2+mg; var ci=0;
+  billetes.forEach(function(b){ var st=r.inspector.checksBilletes[b]; var x=ci%2===0?mg:midX;
+    var col=st==='ok'?[0,150,80]:st==='fail'?[200,40,40]:[150,150,150];
+    var label=st==='ok'?'OK':st==='fail'?'FALLA':'S/D';
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(50,50,50);doc.text(b+':',x,y);
+    doc.setFont('helvetica','bold');doc.setTextColor(col[0],col[1],col[2]);doc.text(label,x+20,y);
+    if(ci%2===1)y+=5.5;ci++;
+  });
+  if(ci%2===1)y+=5.5;y+=4;
+  extras.forEach(function(ex){ var st=r.inspector.checksExtras[ex];
+    var col=st==='ok'?[0,150,80]:st==='fail'?[200,40,40]:[150,150,150];
+    var label=st==='ok'?'OK':st==='fail'?'FALLA':'S/D';
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(50,50,50);doc.text(ex+':',mg,y);
+    doc.setFont('helvetica','bold');doc.setTextColor(col[0],col[1],col[2]);doc.text(label,mg+65,y);y+=5.5;
+  });
+  y+=6;
+  if(r.inspector.firma){txt('Firma Inspector:',mg,y,8,'bold',[80,80,80]);try{doc.addImage(r.inspector.firma,'PNG',mg,y+2,60,18);}catch(e){}y+=26;}
+  hLine(y,[200,168,75]);y+=5;
+  txt('MÁQUINA REINGRESADA AL SERVICIO — PROCESO CERRADO',mg,y,9,'bold',[26,26,46]);
+  doc.save('Acta_Mantenimiento_Maquina_'+r.egreso.maquina+'_'+r.egreso.isla+'.pdf');
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+window.addEventListener('load', function(){
+  bindPipeline();
+  initCanvas('canvas-egreso');
+  initCanvas('canvas-tecnico');
+  initCanvas('canvas-inspector');
+  initChecklist();
+  document.getElementById('e-fecha').value=nowDT();
+  showTab('lista');
+  cargarDatos();
+});
 </script>
 </body>
 </html>
