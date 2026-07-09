@@ -826,23 +826,17 @@ function renderReporte() {
   fuera.sort(function(a,b){ return new Date(a.egreso.fecha) - new Date(b.egreso.fecha); });
   var ahora = new Date();
   var fechaStr = ahora.toLocaleDateString('es-AR') + ' ' + ahora.toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
-  var texto = 'REPORTE MAQUINAS FUERA DE SERVICIO
-';
-  texto += 'Casino Santa Fe - ' + fechaStr + '
-';
-  texto += '=====================================
-
-';
+  var nl = '\n';
+  var texto = 'REPORTE MAQUINAS FUERA DE SERVICIO' + nl;
+  texto += 'Casino Santa Fe - ' + fechaStr + nl;
+  texto += '=====================================' + nl + nl;
   if(!fuera.length) {
-    texto += 'No hay maquinas fuera de servicio.
-';
+    texto += 'No hay maquinas fuera de servicio.' + nl;
   } else {
     fuera.forEach(function(r){
-      texto += 'MTM ' + r.egreso.maquina + ' - ' + calcularTiempoFuera(r.egreso.fecha) + ' fuera de servicio
-';
+      texto += 'MTM ' + r.egreso.maquina + ' - ' + calcularTiempoFuera(r.egreso.fecha) + ' fuera de servicio' + nl;
     });
-    texto += '
-Total: ' + fuera.length + ' maquina' + (fuera.length>1?'s':'') + ' fuera de servicio.';
+    texto += nl + 'Total: ' + fuera.length + ' maquina' + (fuera.length>1?'s':'') + ' fuera de servicio.';
   }
   document.getElementById('reporte-texto').value = texto;
   document.getElementById('reporte-sub').textContent = fuera.length + ' máquina' + (fuera.length!==1?'s':'') + ' fuera de servicio · ' + fechaStr;
