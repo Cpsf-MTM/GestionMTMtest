@@ -20,8 +20,8 @@
   .header { text-align: center; padding: 24px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
   .header h1 { font-size: 20px; font-weight: 600; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
   .header p { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-  .pipeline { display: flex; margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; flex-wrap: wrap; }
-  .pipe-step { flex: 1; min-width:100px; padding: 12px 8px; text-align: center; cursor: pointer; transition: background 0.2s; border-right: 1px solid var(--border); position: relative; }
+  .pipeline { display: flex; margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .pipe-step { flex: 1; padding: 12px 8px; text-align: center; cursor: pointer; transition: background 0.2s; border-right: 1px solid var(--border); position: relative; }
   .pipe-step:last-child { border-right: none; }
   .pipe-step:hover { background: var(--surface2); }
   .pipe-step.active { background: rgba(200,168,75,0.15); }
@@ -98,11 +98,11 @@
   .bar-row .bar-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px; }
   .bar-track { background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
-  .reporte-textarea { width:100%; min-height:300px; background:var(--surface2); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:var(--text); padding:14px; font-size:13px; font-family:'Courier New',monospace; line-height:1.7; resize:vertical; }
   @media (max-width: 600px) {
     .form-grid { grid-template-columns: 1fr; }
     .form-grid.cols3 { grid-template-columns: 1fr 1fr; }
     .form-grid.cols4 { grid-template-columns: 1fr 1fr; }
+    .pipeline { flex-wrap: wrap; }
     .prog-group { grid-template-columns: 1fr; }
   }
 </style>
@@ -127,6 +127,7 @@
     <div class="pipe-step" id="pipe-3"><span class="ps-icon">✅</span><span class="ps-label">Etapa 3</span><span class="ps-count" id="cnt3">0</span></div>
     <div class="pipe-step" id="pipe-4"><span class="ps-icon">📊</span><span class="ps-label">Estadísticas</span></div>
     <div class="pipe-step" id="pipe-5"><span class="ps-icon">📋</span><span class="ps-label">Reporte diario</span></div>
+    <div class="pipe-step" id="pipe-6"><span class="ps-icon">📄</span><span class="ps-label">PDFs</span></div>
   </div>
 
   <div id="alert-area"></div>
@@ -168,8 +169,7 @@
           <option value="">— Seleccionar —</option>
           <option>Borrado total</option><option>Borrado parcial</option><option>Clear</option>
           <option>Cambio de layout</option><option>Cambio de juego</option><option>Cambio de denominación</option>
-          <option>Falla técnica</option><option>Mantenimiento preventivo</option><option>Baja transitoria</option>
-          <option>Cambio de MDC</option>
+          <option>Falla técnica</option><option>Mantenimiento preventivo</option><option>Baja transitoria</option><option>Cambio de MDC</option>
         </select>
       </div>
       <div class="section-title" style="margin-top:14px;">Contadores</div>
@@ -194,19 +194,19 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
           <label class="btn btn-sm" style="cursor:pointer;">
             📷 Tomar foto
-            <input type="file" id="e-foto-camara" accept="image/*" capture="environment" style="display:none;" onchange="previewFoto('e-foto-camara')">
+            <input type="file" id="e-foto-camara" accept="image/*" capture="environment" style="display:none;" onchange="previewFoto('e-foto-camara','e-foto-preview')">
           </label>
           <label class="btn btn-sm" style="cursor:pointer;">
             🖼 Subir imagen
-            <input type="file" id="e-foto-archivo" accept="image/*" style="display:none;" onchange="previewFoto('e-foto-archivo')">
+            <input type="file" id="e-foto-archivo" accept="image/*" style="display:none;" onchange="previewFoto('e-foto-archivo','e-foto-preview')">
           </label>
-          <button class="btn btn-sm" onclick="clearFoto()">✕ Quitar</button>
+          <button class="btn btn-sm" onclick="clearFoto('e-foto-preview','e-foto-camara','e-foto-archivo')">✕ Quitar</button>
         </div>
         <div id="e-foto-preview" style="display:none;">
           <img id="e-foto-img" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border);">
         </div>
-        <input type="hidden" id="e-foto-data">
       </div>
+      <input type="hidden" id="e-foto-data">
       <div class="section-title" style="margin-top:14px;">Firma del Operador</div>
       <div class="field" style="margin-bottom:10px;"><label>Nombre del Operador *</label><input type="text" id="e-operador" placeholder="Nombre completo"></div>
       <div class="firma-wrap">
@@ -331,16 +331,35 @@
       <div id="stats-tiempo" style="background:var(--surface2);border-radius:8px;padding:16px;border:1px solid var(--border);"></div>
     </div>
   </div>
-
   <!-- REPORTE DIARIO -->
   <div id="tab-reporte" style="display:none;">
     <div class="panel">
       <div class="panel-header"><span class="ph-icon">📋</span><div><h2>Reporte de Máquinas Fuera de Servicio</h2><p class="ph-sub" id="reporte-sub">Listado para enviar al final del día</p></div></div>
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-        <button class="btn btn-sm" onclick="cargarDatos().then(renderReporte)">🔄 Actualizar</button>
+        <button class="btn btn-sm" onclick="cargarDatos();setTimeout(function(){renderReporte();},1500)">🔄 Actualizar</button>
         <button class="btn btn-primary" id="btn-copiar-reporte" onclick="copiarReporte()">📋 Copiar texto</button>
       </div>
-      <textarea id="reporte-texto" class="reporte-textarea" readonly></textarea>
+      <textarea id="reporte-texto" readonly style="width:100%;min-height:300px;background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);padding:14px;font-size:13px;font-family:'Courier New',monospace;line-height:1.7;resize:vertical;"></textarea>
+    </div>
+  </div>
+
+  <!-- PDFs POR FECHA -->
+  <div id="tab-pdfs" style="display:none;">
+    <div class="panel">
+      <div class="panel-header"><span class="ph-icon">📄</span><div><h2>PDFs — Máquinas Reingresadas</h2><p class="ph-sub">Filtrá por rango de fecha para descargar actas</p></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px;">
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Desde</label>
+          <input type="date" id="pdf-fecha-desde" style="background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);padding:7px 10px;font-size:13px;font-family:var(--font);outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Hasta</label>
+          <input type="date" id="pdf-fecha-hasta" style="background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);padding:7px 10px;font-size:13px;font-family:var(--font);outline:none;">
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="filtrarPDFs()">🔍 Buscar</button>
+        <button class="btn btn-sm" onclick="limpiarFiltroPDFs()">✕ Limpiar</button>
+      </div>
+      <div id="pdf-resultados"></div>
     </div>
   </div>
 </div>
@@ -357,7 +376,7 @@
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwE1O3jV1Hxfy39-zY45LmiZYZWkvk3mqlIyk3SskM3WAfQS3leacz4tjVOXP_QT0_W/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbys0iykFsoOUeZCDX_5cb9muaPkZnNmGL1_0ILfwZjUdwsxeTsZA2NEncqA7f_q-QeU/exec';
 let registros = [];
 let currentTecnicoId = null;
 let currentInspectorId = null;
@@ -367,19 +386,20 @@ const checkState = {};
 
 // ── TABS ─────────────────────────────────────────────────────
 function showTab(tab) {
-  ['lista','egreso','tecnico','inspector','estadisticas','reporte'].forEach(function(t) {
+  ['lista','egreso','tecnico','inspector','estadisticas','reporte','pdfs'].forEach(function(t) {
     document.getElementById('tab-'+t).style.display = t===tab ? '' : 'none';
   });
-  ['pipe-0','pipe-1','pipe-2','pipe-3','pipe-4','pipe-5'].forEach(function(id) {
+  ['pipe-0','pipe-1','pipe-2','pipe-3','pipe-4'].forEach(function(id) {
     document.getElementById(id).classList.remove('active');
   });
-  var map = {lista:'pipe-0',egreso:'pipe-1',tecnico:'pipe-2',inspector:'pipe-3',estadisticas:'pipe-4',reporte:'pipe-5'};
+  var map = {lista:'pipe-0',egreso:'pipe-1',tecnico:'pipe-2',inspector:'pipe-3',estadisticas:'pipe-4',reporte:'pipe-5',pdfs:'pipe-6'};
   if(map[tab]) document.getElementById(map[tab]).classList.add('active');
   if(tab==='lista') renderLista();
   if(tab==='estadisticas') renderEstadisticas();
   if(tab==='reporte') renderReporte();
 }
 
+// bind pipeline clicks after DOM ready
 function bindPipeline() {
   document.getElementById('pipe-0').onclick = function(){ showTab('lista'); };
   document.getElementById('pipe-1').onclick = function(){ showTab('egreso'); resetEgresoForm(); };
@@ -387,6 +407,8 @@ function bindPipeline() {
   document.getElementById('pipe-3').onclick = function(){ showTab('inspector'); };
   document.getElementById('pipe-4').onclick = function(){ showTab('estadisticas'); };
   document.getElementById('pipe-5').onclick = function(){ showTab('reporte'); };
+  var p6 = document.getElementById('pipe-6');
+  if(p6) p6.onclick = function(){ showTab('pdfs'); };
 }
 
 // ── LOADING / ALERTAS / MODAL ─────────────────────────────────
@@ -431,15 +453,15 @@ function parseRegistro(r) {
     egreso: { maquina:String(r.e_maquina), isla:String(r.e_isla), fecha:r.e_fecha, motivo:r.e_motivo,
       coinin:r.e_coinin, coinout:r.e_coinout, jackpot:r.e_jackpot,
       prog1:r.e_prog1, prog2:r.e_prog2, prog3:r.e_prog3, prog4:r.e_prog4,
-      devolucion:r.e_devolucion, operador:r.e_operador, firma:r.e_firma, foto:r.e_foto },
+      devolucion:r.e_devolucion, operador:r.e_operador, firma:r.e_firma },
     tecnico: r.t_fecha ? { fecha:r.t_fecha, informe:r.t_informe, solucion:r.t_solucion,
-      tecnico:r.t_tecnico, firma:r.t_firma, maquina:String(r.e_maquina), isla:String(r.e_isla) } : null,
+      tecnico:r.t_tecnico, firma:r.t_firma, maquina:r.e_maquina, isla:r.e_isla } : null,
     inspector: r.i_fecha ? { fecha:r.i_fecha, informe:r.i_informe, coinin:r.i_coinin,
       devolucion:r.i_devolucion, denominacion:r.i_denominacion,
       apuestaMin:r.i_apuesta_min, apuestaMax:r.i_apuesta_max,
       mdc:r.i_mdc, inspector:r.i_inspector, firma:r.i_firma,
       checksBilletes:tryParse(r.i_checks_billetes,{}),
-      checksExtras:tryParse(r.i_checks_extras,{}), maquina:String(r.e_maquina), isla:String(r.e_isla) } : null
+      checksExtras:tryParse(r.i_checks_extras,{}), maquina:r.e_maquina, isla:r.e_isla } : null
   };
 }
 
@@ -452,7 +474,6 @@ function flattenRegistro(r) {
     e_coinin:r.egreso.coinin||'', e_coinout:r.egreso.coinout||'', e_jackpot:r.egreso.jackpot||'',
     e_prog1:r.egreso.prog1||'', e_prog2:r.egreso.prog2||'', e_prog3:r.egreso.prog3||'', e_prog4:r.egreso.prog4||'',
     e_devolucion:r.egreso.devolucion||'', e_operador:r.egreso.operador, e_firma:r.egreso.firma||'',
-    e_foto:r.egreso.foto||'',
     t_fecha:r.tecnico?r.tecnico.fecha:'', t_informe:r.tecnico?r.tecnico.informe:'',
     t_solucion:r.tecnico?r.tecnico.solucion:'', t_tecnico:r.tecnico?r.tecnico.tecnico:'', t_firma:r.tecnico?r.tecnico.firma||'':'',
     i_fecha:r.inspector?r.inspector.fecha:'', i_informe:r.inspector?r.inspector.informe:'',
@@ -475,32 +496,6 @@ async function guardarEnAPI(action, data) {
     showAlert('Error al guardar: '+e.message,'danger');
     return false;
   }
-}
-
-// ── FOTO ─────────────────────────────────────────────────────
-function previewFoto(inputId) {
-  var input = document.getElementById(inputId);
-  if(!input.files||!input.files[0]) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    document.getElementById('e-foto-img').src = e.target.result;
-    document.getElementById('e-foto-preview').style.display = '';
-    document.getElementById('e-foto-data').value = e.target.result;
-  };
-  reader.readAsDataURL(input.files[0]);
-}
-
-function clearFoto() {
-  document.getElementById('e-foto-preview').style.display = 'none';
-  document.getElementById('e-foto-img').src = '';
-  document.getElementById('e-foto-data').value = '';
-  document.getElementById('e-foto-camara').value = '';
-  document.getElementById('e-foto-archivo').value = '';
-}
-
-function getFotoData() {
-  var el = document.getElementById('e-foto-data');
-  return el ? el.value : '';
 }
 
 // ── CANVAS ────────────────────────────────────────────────────
@@ -531,16 +526,48 @@ function nowDT(){ var d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOff
 function formatFecha(f){ if(!f) return '-'; try{ return new Date(f).toLocaleString('es-AR'); }catch(e){ return f; } }
 function formatPesos(v){ if(!v) return '-'; return '$ '+String(v).replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
 
+// ── FOTO ─────────────────────────────────────────────────────
+function previewFoto(inputId, previewId) {
+  var input = document.getElementById(inputId);
+  if(!input.files||!input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('e-foto-img').src = e.target.result;
+    document.getElementById(previewId).style.display = '';
+    document.getElementById('e-foto-data').value = e.target.result;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function clearFoto(previewId, id1, id2) {
+  document.getElementById(previewId).style.display = 'none';
+  document.getElementById('e-foto-img').src = '';
+  document.getElementById('e-foto-data').value = '';
+  document.getElementById(id1).value = '';
+  document.getElementById(id2).value = '';
+}
+
+function getFotoData() {
+  var el = document.getElementById('e-foto-data');
+  return el ? el.value : '';
+}
+
 // ── EGRESO ────────────────────────────────────────────────────
 function resetEgresoForm(){
   ['e-maquina','e-isla','e-coinin','e-coinout','e-jackpot','e-prog1','e-prog2','e-prog3','e-prog4','e-devolucion','e-operador'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('e-motivo').value='';
   document.getElementById('e-fecha').value=nowDT();
   clearCanvas('canvas-egreso');
-  clearFoto();
+  clearFoto('e-foto-preview','e-foto-camara','e-foto-archivo');
 }
 
 async function guardarEgreso(){
+  // Si estamos en modo edición, derivar a guardarEdicionEgreso
+  var btn = document.getElementById('btn-guardar-egreso');
+  if(btn.getAttribute('data-modo') === 'edicion') {
+    await guardarEdicionEgreso();
+    return;
+  }
   var maquina=document.getElementById('e-maquina').value.trim();
   var isla=document.getElementById('e-isla').value.trim();
   var fecha=document.getElementById('e-fecha').value;
@@ -713,6 +740,7 @@ function renderEstadisticas(){
   document.getElementById('stat-pendientes').textContent=pend;
   document.getElementById('stat-completo').textContent=comp;
 
+  // Ranking máquinas
   var contMaq={};
   registros.forEach(function(r){ var k='Máq. '+r.egreso.maquina+' · Isla '+r.egreso.isla; contMaq[k]=(contMaq[k]||0)+1; });
   var rankMaq=Object.entries(contMaq).sort(function(a,b){ return b[1]-a[1]; }).slice(0,10);
@@ -732,6 +760,7 @@ function renderEstadisticas(){
     }).join('');
   }
 
+  // Ranking motivos
   var contMotivo={};
   registros.forEach(function(r){ contMotivo[r.egreso.motivo]=(contMotivo[r.egreso.motivo]||0)+1; });
   var rankMotivo=Object.entries(contMotivo).sort(function(a,b){ return b[1]-a[1]; });
@@ -748,6 +777,7 @@ function renderEstadisticas(){
     }).join('');
   }
 
+  // Tiempo promedio
   var tiempos=registros.filter(function(r){ return r.tecnico&&r.egreso.fecha&&r.tecnico.fecha; }).map(function(r){
     var ini=new Date(r.egreso.fecha), fin=new Date(r.tecnico.fecha);
     return (fin-ini)/(1000*60*60);
@@ -789,24 +819,26 @@ function calcularTiempoFuera(fechaEgreso) {
 function renderReporte() {
   var fuera = registros.filter(function(r){ return r.estado==='egreso'||r.estado==='tecnico'; });
   fuera.sort(function(a,b){ return new Date(a.egreso.fecha) - new Date(b.egreso.fecha); });
-
   var ahora = new Date();
   var fechaStr = ahora.toLocaleDateString('es-AR') + ' ' + ahora.toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+  var texto = 'REPORTE MAQUINAS FUERA DE SERVICIO
+';
+  texto += 'Casino Santa Fe - ' + fechaStr + '
+';
+  texto += '=====================================
 
-  var texto = 'REPORTE MAQUINAS FUERA DE SERVICIO\n';
-  texto += 'Casino Santa Fe - ' + fechaStr + '\n';
-  texto += '=====================================\n\n';
-
+';
   if(!fuera.length) {
-    texto += 'No hay maquinas fuera de servicio.\n';
+    texto += 'No hay maquinas fuera de servicio.
+';
   } else {
     fuera.forEach(function(r){
-      var tiempo = calcularTiempoFuera(r.egreso.fecha);
-      texto += 'MTM ' + r.egreso.maquina + ' - ' + tiempo + ' fuera de servicio\n';
+      texto += 'MTM ' + r.egreso.maquina + ' - ' + calcularTiempoFuera(r.egreso.fecha) + ' fuera de servicio
+';
     });
-    texto += '\nTotal: ' + fuera.length + ' maquina' + (fuera.length>1?'s':'') + ' fuera de servicio.';
+    texto += '
+Total: ' + fuera.length + ' maquina' + (fuera.length>1?'s':'') + ' fuera de servicio.';
   }
-
   document.getElementById('reporte-texto').value = texto;
   document.getElementById('reporte-sub').textContent = fuera.length + ' máquina' + (fuera.length!==1?'s':'') + ' fuera de servicio · ' + fechaStr;
 }
@@ -828,6 +860,50 @@ function copiarReporte() {
   }
 }
 
+// ── PDFs POR FECHA ────────────────────────────────────────────
+function filtrarPDFs() {
+  var desde = document.getElementById('pdf-fecha-desde').value;
+  var hasta = document.getElementById('pdf-fecha-hasta').value;
+  var cont = document.getElementById('pdf-resultados');
+  if(!desde && !hasta) {
+    cont.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Seleccioná al menos una fecha para filtrar.</p>';
+    return;
+  }
+  var desdeDate = desde ? new Date(desde + 'T00:00:00') : null;
+  var hastaDate = hasta ? new Date(hasta + 'T23:59:59') : null;
+  var resultados = registros.filter(function(r) {
+    if(r.estado !== 'completo') return false;
+    var fi = r.inspector && r.inspector.fecha ? new Date(r.inspector.fecha) : null;
+    if(!fi) return false;
+    if(desdeDate && fi < desdeDate) return false;
+    if(hastaDate && fi > hastaDate) return false;
+    return true;
+  }).sort(function(a,b){ return new Date(b.inspector.fecha) - new Date(a.inspector.fecha); });
+  if(!resultados.length) {
+    cont.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No hay máquinas reingresadas en ese rango de fechas.</p>';
+    return;
+  }
+  cont.innerHTML = '<p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">' + resultados.length + ' registro' + (resultados.length>1?'s':'') + ' encontrado' + (resultados.length>1?'s':'') + '</p>' +
+    resultados.map(function(r) {
+      return '<div class="record-card" style="margin-bottom:8px;">' +
+        '<span class="rc-status">✅</span>' +
+        '<div class="rc-info">' +
+          '<h3>Máquina ' + r.egreso.maquina + ' &nbsp;·&nbsp; Isla ' + r.egreso.isla + '</h3>' +
+          '<p>' + r.egreso.motivo + ' · Reingreso: ' + formatFecha(r.inspector.fecha) + ' · Inspector: ' + r.inspector.inspector + '</p>' +
+        '</div>' +
+        '<div class="rc-actions">' +
+          '<button class="btn btn-sm btn-primary" onclick="generarPDF('' + r.id + '')">⬇ PDF</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+}
+
+function limpiarFiltroPDFs() {
+  document.getElementById('pdf-fecha-desde').value = '';
+  document.getElementById('pdf-fecha-hasta').value = '';
+  document.getElementById('pdf-resultados').innerHTML = '';
+}
+
 // ── LISTA ─────────────────────────────────────────────────────
 function renderLista(){
   var q=(document.getElementById('search-input').value||'').toLowerCase();
@@ -844,6 +920,7 @@ function renderLista(){
   var bc={egreso:'badge-warning',tecnico:'badge-info',completo:'badge-success'};
   cont.innerHTML=list.map(function(r){
     var actions='';
+    if(r.estado==='egreso') actions+='<button class="btn btn-sm" onclick="editarEgreso(\''+r.id+'\')">✏️ Editar</button>';
     if(r.estado==='egreso') actions+='<button class="btn btn-sm" onclick="irTecnico(\''+r.id+'\')">🔧 Reparar</button>';
     if(r.estado==='tecnico') actions+='<button class="btn btn-sm" onclick="irInspector(\''+r.id+'\')">🔍 Inspeccionar</button>';
     if(r.estado==='completo') actions+='<button class="btn btn-sm btn-primary" onclick="generarPDF(\''+r.id+'\')">⬇ PDF</button>';
@@ -853,6 +930,79 @@ function renderLista(){
       '<p>'+r.egreso.motivo+' · Egreso: '+formatFecha(r.egreso.fecha)+' · Operador: '+r.egreso.operador+'</p></div>'+
       '<div class="rc-actions">'+actions+'</div></div>';
   }).join('');
+}
+
+function editarEgreso(id) {
+  var r = registros.find(function(x){ return x.id===id; });
+  if(!r || r.estado !== 'egreso') {
+    showAlert('Este registro ya no se puede editar.','info');
+    return;
+  }
+  window._editandoId = id;
+  document.getElementById('e-maquina').value = r.egreso.maquina || '';
+  document.getElementById('e-isla').value = r.egreso.isla || '';
+  document.getElementById('e-fecha').value = r.egreso.fecha || '';
+  document.getElementById('e-motivo').value = r.egreso.motivo || '';
+  document.getElementById('e-coinin').value = r.egreso.coinin || '';
+  document.getElementById('e-coinout').value = r.egreso.coinout || '';
+  document.getElementById('e-jackpot').value = r.egreso.jackpot || '';
+  document.getElementById('e-prog1').value = r.egreso.prog1 || '';
+  document.getElementById('e-prog2').value = r.egreso.prog2 || '';
+  document.getElementById('e-prog3').value = r.egreso.prog3 || '';
+  document.getElementById('e-prog4').value = r.egreso.prog4 || '';
+  document.getElementById('e-devolucion').value = r.egreso.devolucion || '';
+  document.getElementById('e-operador').value = r.egreso.operador || '';
+  clearCanvas('canvas-egreso');
+  clearFoto();
+  var btn = document.getElementById('btn-guardar-egreso');
+  btn.textContent = '💾 Guardar Cambios';
+  btn.setAttribute('data-modo', 'edicion');
+  showTab('egreso');
+}
+
+async function guardarEdicionEgreso() {
+  var id = window._editandoId;
+  if(!id) return;
+  var maquina = document.getElementById('e-maquina').value.trim();
+  var isla = document.getElementById('e-isla').value.trim();
+  var fecha = document.getElementById('e-fecha').value;
+  var motivo = document.getElementById('e-motivo').value;
+  var operador = document.getElementById('e-operador').value.trim();
+  if(!maquina||!isla||!fecha||!motivo||!operador){ showAlert('Completar campos obligatorios.','info'); return; }
+  var btn = document.getElementById('btn-guardar-egreso');
+  btn.disabled = true;
+  showLoading('Guardando cambios...');
+  var idx = registros.findIndex(function(x){ return x.id===id; });
+  // Actualizar solo los datos del egreso, mantener id y estado
+  registros[idx].egreso.maquina = maquina;
+  registros[idx].egreso.isla = isla;
+  registros[idx].egreso.fecha = fecha;
+  registros[idx].egreso.motivo = motivo;
+  registros[idx].egreso.coinin = document.getElementById('e-coinin').value;
+  registros[idx].egreso.coinout = document.getElementById('e-coinout').value;
+  registros[idx].egreso.jackpot = document.getElementById('e-jackpot').value;
+  registros[idx].egreso.prog1 = document.getElementById('e-prog1').value;
+  registros[idx].egreso.prog2 = document.getElementById('e-prog2').value;
+  registros[idx].egreso.prog3 = document.getElementById('e-prog3').value;
+  registros[idx].egreso.prog4 = document.getElementById('e-prog4').value;
+  registros[idx].egreso.devolucion = document.getElementById('e-devolucion').value;
+  registros[idx].egreso.operador = operador;
+  // Actualizar firma si se volvió a firmar
+  var nuevaFirma = getFirma('canvas-egreso');
+  if(nuevaFirma) registros[idx].egreso.firma = nuevaFirma;
+  var nuevaFoto = getFotoData();
+  if(nuevaFoto) registros[idx].egreso.foto = nuevaFoto;
+  var ok = await guardarEnAPI('update', flattenRegistro(registros[idx]));
+  hideLoading(); btn.disabled = false;
+  if(!ok) return;
+  // Restaurar botón original
+  window._editandoId = null;
+  var btnR = document.getElementById('btn-guardar-egreso');
+  btnR.textContent = '📤 Registrar Egreso y Enviar Aviso';
+  btnR.removeAttribute('data-modo');
+  updateCounters();
+  showTab('lista');
+  showAlert('✅ Registro actualizado correctamente.','success');
 }
 
 function irTecnico(id){ var r=registros.find(function(x){ return x.id===id; }); showTab('tecnico'); document.getElementById('t-buscar-maq').value=r.egreso.maquina; buscarParaTecnico(); }
@@ -884,11 +1034,14 @@ function generarPDF(id){
   if(r.egreso.firma){txt('Firma Operador:',mg,y,8,'bold',[80,80,80]);try{doc.addImage(r.egreso.firma,'PNG',mg,y+2,60,18);}catch(e){}y+=24;}
   if(r.egreso.foto){
     if(y>200){doc.addPage();y=20;}
-    txt('Foto de la máquina:',mg,y,8,'bold',[80,80,80]);y+=4;
-    try{ doc.addImage(r.egreso.foto,'JPEG',mg,y,80,60); y+=66; }catch(e){}
+    txt('Foto de la maquina:',mg,y,8,'bold',[80,80,80]);y+=4;
+    try{
+      var fotoW=80, fotoH=60;
+      doc.addImage(r.egreso.foto,'JPEG',mg,y,fotoW,fotoH);
+      y+=fotoH+6;
+    }catch(e){}
   }
   hLine(y,[180,180,200]);y+=8;
-  if(y>220){doc.addPage();y=20;}
   y=secHead('  ETAPA 2 — REPARACIÓN TÉCNICA',y,[30,90,60]);y+=6;
   kv('N° Informe',r.tecnico.informe||'S/N',mg,mg+25,y);kv('Técnico',r.tecnico.tecnico,75,95,y);kv('Fecha/Hora',formatFecha(r.tecnico.fecha),140,160,y);y+=8;
   txt('Solución aplicada:',mg,y,9,'bold',[80,80,80]);y+=5;
