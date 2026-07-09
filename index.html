@@ -331,6 +331,7 @@
       <div id="stats-tiempo" style="background:var(--surface2);border-radius:8px;padding:16px;border:1px solid var(--border);"></div>
     </div>
   </div>
+
   <!-- REPORTE DIARIO -->
   <div id="tab-reporte" style="display:none;">
     <div class="panel">
@@ -339,7 +340,7 @@
         <button class="btn btn-sm" onclick="cargarDatos();setTimeout(function(){renderReporte();},1500)">🔄 Actualizar</button>
         <button class="btn btn-primary" id="btn-copiar-reporte" onclick="copiarReporte()">📋 Copiar texto</button>
       </div>
-      <textarea id="reporte-texto" readonly style="width:100%;min-height:300px;background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);padding:14px;font-size:13px;font-family:'Courier New',monospace;line-height:1.7;resize:vertical;"></textarea>
+      <textarea id="reporte-texto" readonly style="width:100%;min-height:300px;background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);padding:14px;font-size:13px;font-family:'Courier New',monospace;line-height:1.7;resize:vertical;outline:none;"></textarea>
     </div>
   </div>
 
@@ -387,18 +388,13 @@ const checkState = {};
 // ── TABS ─────────────────────────────────────────────────────
 function showTab(tab) {
   ['lista','egreso','tecnico','inspector','estadisticas','reporte','pdfs'].forEach(function(t) {
-    var el = document.getElementById('tab-'+t);
-    if(el) el.style.display = t===tab ? '' : 'none';
+    var el=document.getElementById('tab-'+t); if(el) el.style.display = t===tab ? '' : 'none';
   });
   ['pipe-0','pipe-1','pipe-2','pipe-3','pipe-4','pipe-5','pipe-6'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if(el) el.classList.remove('active');
+    var el=document.getElementById(id); if(el) el.classList.remove('active');
   });
   var map = {lista:'pipe-0',egreso:'pipe-1',tecnico:'pipe-2',inspector:'pipe-3',estadisticas:'pipe-4',reporte:'pipe-5',pdfs:'pipe-6'};
-  if(map[tab]) {
-    var activeEl = document.getElementById(map[tab]);
-    if(activeEl) activeEl.classList.add('active');
-  }
+  if(map[tab]){var ae=document.getElementById(map[tab]);if(ae)ae.classList.add('active');}
   if(tab==='lista') renderLista();
   if(tab==='estadisticas') renderEstadisticas();
   if(tab==='reporte') renderReporte();
@@ -412,8 +408,7 @@ function bindPipeline() {
   document.getElementById('pipe-3').onclick = function(){ showTab('inspector'); };
   document.getElementById('pipe-4').onclick = function(){ showTab('estadisticas'); };
   document.getElementById('pipe-5').onclick = function(){ showTab('reporte'); };
-  var p6 = document.getElementById('pipe-6');
-  if(p6) p6.onclick = function(){ showTab('pdfs'); };
+  document.getElementById('pipe-6').onclick = function(){ showTab('pdfs'); };
 }
 
 // ── LOADING / ALERTAS / MODAL ─────────────────────────────────
@@ -567,12 +562,7 @@ function resetEgresoForm(){
 }
 
 async function guardarEgreso(){
-  // Si estamos en modo edición, derivar a guardarEdicionEgreso
-  var btn = document.getElementById('btn-guardar-egreso');
-  if(btn.getAttribute('data-modo') === 'edicion') {
-    await guardarEdicionEgreso();
-    return;
-  }
+  if(window._modoEdicion) { await guardarEdicionEgreso(); return; }
   var maquina=document.getElementById('e-maquina').value.trim();
   var isla=document.getElementById('e-isla').value.trim();
   var fecha=document.getElementById('e-fecha').value;
@@ -814,8 +804,7 @@ function calcularTiempoFuera(fechaEgreso) {
   if(diffMs < 0) return '-';
   var horas = Math.floor(diffMs/(1000*60*60));
   var dias = Math.floor(horas/24);
-  var horasRestantes = horas%24;
-  if(dias>0) return dias+'d '+horasRestantes+'h';
+  if(dias>0) return dias+'d '+(horas%24)+'h';
   var mins = Math.floor((diffMs%(1000*60*60))/(1000*60));
   if(horas>0) return horas+'h '+mins+'m';
   return mins+'m';
@@ -823,39 +812,41 @@ function calcularTiempoFuera(fechaEgreso) {
 
 function renderReporte() {
   var fuera = registros.filter(function(r){ return r.estado==='egreso'||r.estado==='tecnico'; });
-  fuera.sort(function(a,b){ return new Date(a.egreso.fecha) - new Date(b.egreso.fecha); });
+  fuera.sort(function(a,b){ return new Date(a.egreso.fecha)-new Date(b.egreso.fecha); });
   var ahora = new Date();
-  var fechaStr = ahora.toLocaleDateString('es-AR') + ' ' + ahora.toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
-  var nl = '\n';
-  var texto = 'REPORTE MAQUINAS FUERA DE SERVICIO' + nl;
-  texto += 'Casino Santa Fe - ' + fechaStr + nl;
-  texto += '=====================================' + nl + nl;
+  var fechaStr = ahora.toLocaleDateString('es-AR')+' '+ahora.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  var lineas = [
+    'REPORTE MAQUINAS FUERA DE SERVICIO',
+    'Casino Santa Fe - '+fechaStr,
+    '=====================================',
+    ''
+  ];
   if(!fuera.length) {
-    texto += 'No hay maquinas fuera de servicio.' + nl;
+    lineas.push('No hay maquinas fuera de servicio.');
   } else {
     fuera.forEach(function(r){
-      texto += 'MTM ' + r.egreso.maquina + ' - ' + calcularTiempoFuera(r.egreso.fecha) + ' fuera de servicio' + nl;
+      lineas.push('MTM '+r.egreso.maquina+' - '+calcularTiempoFuera(r.egreso.fecha)+' fuera de servicio');
     });
-    texto += nl + 'Total: ' + fuera.length + ' maquina' + (fuera.length>1?'s':'') + ' fuera de servicio.';
+    lineas.push('');
+    lineas.push('Total: '+fuera.length+' maquina'+(fuera.length>1?'s':'')+' fuera de servicio.');
   }
-  document.getElementById('reporte-texto').value = texto;
-  document.getElementById('reporte-sub').textContent = fuera.length + ' máquina' + (fuera.length!==1?'s':'') + ' fuera de servicio · ' + fechaStr;
+  document.getElementById('reporte-texto').value = lineas.join('\n');
+  document.getElementById('reporte-sub').textContent = fuera.length+' máquina'+(fuera.length!==1?'s':'')+' fuera de servicio · '+fechaStr;
 }
 
 function copiarReporte() {
-  var textarea = document.getElementById('reporte-texto');
-  textarea.select();
-  textarea.setSelectionRange(0, 999999);
+  var t = document.getElementById('reporte-texto');
+  t.select(); t.setSelectionRange(0,999999);
   var btn = document.getElementById('btn-copiar-reporte');
   try {
-    navigator.clipboard.writeText(textarea.value).then(function(){
-      btn.textContent = '✓ Copiado';
-      setTimeout(function(){ btn.textContent = '📋 Copiar texto'; }, 2000);
+    navigator.clipboard.writeText(t.value).then(function(){
+      btn.textContent='✓ Copiado';
+      setTimeout(function(){ btn.textContent='📋 Copiar texto'; },2000);
     });
   } catch(e) {
     document.execCommand('copy');
-    btn.textContent = '✓ Copiado';
-    setTimeout(function(){ btn.textContent = '📋 Copiar texto'; }, 2000);
+    btn.textContent='✓ Copiado';
+    setTimeout(function(){ btn.textContent='📋 Copiar texto'; },2000);
   }
 }
 
@@ -865,42 +856,39 @@ function filtrarPDFs() {
   var hasta = document.getElementById('pdf-fecha-hasta').value;
   var cont = document.getElementById('pdf-resultados');
   if(!desde && !hasta) {
-    cont.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Seleccioná al menos una fecha para filtrar.</p>';
+    cont.innerHTML='<p style="color:var(--text-muted);font-size:13px;">Seleccioná al menos una fecha.</p>';
     return;
   }
-  var desdeDate = desde ? new Date(desde + 'T00:00:00') : null;
-  var hastaDate = hasta ? new Date(hasta + 'T23:59:59') : null;
-  var resultados = registros.filter(function(r) {
-    if(r.estado !== 'completo') return false;
-    var fi = r.inspector && r.inspector.fecha ? new Date(r.inspector.fecha) : null;
+  var d1 = desde ? new Date(desde+'T00:00:00') : null;
+  var d2 = hasta ? new Date(hasta+'T23:59:59') : null;
+  var res = registros.filter(function(r){
+    if(r.estado!=='completo') return false;
+    var fi = r.inspector&&r.inspector.fecha ? new Date(r.inspector.fecha) : null;
     if(!fi) return false;
-    if(desdeDate && fi < desdeDate) return false;
-    if(hastaDate && fi > hastaDate) return false;
+    if(d1 && fi<d1) return false;
+    if(d2 && fi>d2) return false;
     return true;
-  }).sort(function(a,b){ return new Date(b.inspector.fecha) - new Date(a.inspector.fecha); });
-  if(!resultados.length) {
-    cont.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No hay máquinas reingresadas en ese rango de fechas.</p>';
+  }).sort(function(a,b){ return new Date(b.inspector.fecha)-new Date(a.inspector.fecha); });
+  if(!res.length) {
+    cont.innerHTML='<p style="color:var(--text-muted);font-size:13px;">No hay máquinas reingresadas en ese rango.</p>';
     return;
   }
-  cont.innerHTML = '<p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">' + resultados.length + ' registro' + (resultados.length>1?'s':'') + ' encontrado' + (resultados.length>1?'s':'') + '</p>' +
-    resultados.map(function(r) {
-      return '<div class="record-card" style="margin-bottom:8px;">' +
-        '<span class="rc-status">✅</span>' +
-        '<div class="rc-info">' +
-          '<h3>Máquina ' + r.egreso.maquina + ' &nbsp;·&nbsp; Isla ' + r.egreso.isla + '</h3>' +
-          '<p>' + r.egreso.motivo + ' · Reingreso: ' + formatFecha(r.inspector.fecha) + ' · Inspector: ' + r.inspector.inspector + '</p>' +
-        '</div>' +
-        '<div class="rc-actions">' +
-          '<button class="btn btn-sm btn-primary" onclick="generarPDF('' + r.id + '')">⬇ PDF</button>' +
-        '</div>' +
-      '</div>';
-    }).join('');
+  var html = '<p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">'+res.length+' registro'+(res.length>1?'s':'')+' encontrado'+(res.length>1?'s':'')+'</p>';
+  res.forEach(function(r){
+    html += '<div class="record-card" style="margin-bottom:8px;">';
+    html += '<span class="rc-status">✅</span>';
+    html += '<div class="rc-info"><h3>Máquina '+r.egreso.maquina+' &nbsp;·&nbsp; Isla '+r.egreso.isla+'</h3>';
+    html += '<p>'+r.egreso.motivo+' · Reingreso: '+formatFecha(r.inspector.fecha)+' · Inspector: '+r.inspector.inspector+'</p></div>';
+    html += '<div class="rc-actions"><button class="btn btn-sm btn-primary" onclick="generarPDF(\''+r.id+'\')">⬇ PDF</button></div>';
+    html += '</div>';
+  });
+  cont.innerHTML = html;
 }
 
 function limpiarFiltroPDFs() {
-  document.getElementById('pdf-fecha-desde').value = '';
-  document.getElementById('pdf-fecha-hasta').value = '';
-  document.getElementById('pdf-resultados').innerHTML = '';
+  document.getElementById('pdf-fecha-desde').value='';
+  document.getElementById('pdf-fecha-hasta').value='';
+  document.getElementById('pdf-resultados').innerHTML='';
 }
 
 // ── LISTA ─────────────────────────────────────────────────────
@@ -937,7 +925,9 @@ function editarEgreso(id) {
     showAlert('Este registro ya no se puede editar.','info');
     return;
   }
+  // Guardar el id que se está editando
   window._editandoId = id;
+  // Pre-cargar el formulario con los datos existentes
   document.getElementById('e-maquina').value = r.egreso.maquina || '';
   document.getElementById('e-isla').value = r.egreso.isla || '';
   document.getElementById('e-fecha').value = r.egreso.fecha || '';
@@ -953,9 +943,9 @@ function editarEgreso(id) {
   document.getElementById('e-operador').value = r.egreso.operador || '';
   clearCanvas('canvas-egreso');
   clearFoto();
-  var btn = document.getElementById('btn-guardar-egreso');
-  btn.textContent = '💾 Guardar Cambios';
-  btn.setAttribute('data-modo', 'edicion');
+  // Cambiar título y botón para modo edición
+  window._modoEdicion = true;
+  document.getElementById('btn-guardar-egreso').textContent = '💾 Guardar Cambios';
   showTab('egreso');
 }
 
@@ -972,7 +962,6 @@ async function guardarEdicionEgreso() {
   btn.disabled = true;
   showLoading('Guardando cambios...');
   var idx = registros.findIndex(function(x){ return x.id===id; });
-  // Actualizar solo los datos del egreso, mantener id y estado
   registros[idx].egreso.maquina = maquina;
   registros[idx].egreso.isla = isla;
   registros[idx].egreso.fecha = fecha;
@@ -986,7 +975,6 @@ async function guardarEdicionEgreso() {
   registros[idx].egreso.prog4 = document.getElementById('e-prog4').value;
   registros[idx].egreso.devolucion = document.getElementById('e-devolucion').value;
   registros[idx].egreso.operador = operador;
-  // Actualizar firma si se volvió a firmar
   var nuevaFirma = getFirma('canvas-egreso');
   if(nuevaFirma) registros[idx].egreso.firma = nuevaFirma;
   var nuevaFoto = getFotoData();
@@ -994,11 +982,9 @@ async function guardarEdicionEgreso() {
   var ok = await guardarEnAPI('update', flattenRegistro(registros[idx]));
   hideLoading(); btn.disabled = false;
   if(!ok) return;
-  // Restaurar botón original
   window._editandoId = null;
-  var btnR = document.getElementById('btn-guardar-egreso');
-  btnR.textContent = '📤 Registrar Egreso y Enviar Aviso';
-  btnR.removeAttribute('data-modo');
+  window._modoEdicion = false;
+  document.getElementById('btn-guardar-egreso').textContent = '📤 Registrar Egreso y Enviar Aviso';
   updateCounters();
   showTab('lista');
   showAlert('✅ Registro actualizado correctamente.','success');
